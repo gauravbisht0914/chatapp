@@ -1,0 +1,26 @@
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import { createBrowserRouter, createRoutesFromElements, Route } from "react-router";
+import { RouterProvider } from "react-router/dom";
+import { NotFound, ChatBox, Search, Settings, Notifications } from './pages/index.js';
+import App from './App.jsx';
+
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route>
+      <Route path="*" element={<NotFound />} />
+      <Route path="/" element={<App />} >
+      <Route path="/chat/:id" element={<ChatBox />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/notifications" element={<Notifications />} />
+      </Route>
+
+    </Route>
+  )
+)
+createRoot(document.getElementById('root')).render(
+  <RouterProvider router={router} />
+)

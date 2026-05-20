@@ -1,0 +1,135 @@
+import React from 'react'
+
+const Settings = () => {
+    const currentUser = {
+        name: 'Alex Morgan',
+        email: 'alex.morgan@example.com',
+        avatar: 'https://i.pravatar.cc/150?img=32',
+    }
+
+    return (
+        <div className='min-h-screen bg-transparent px-4 py-8 sm:px-6 lg:px-8'>
+            <div className='mx-auto max-w-6xl'>
+                <div className='rounded-[32px] border border-white/10 bg-slate-950/85 p-8 shadow-2xl shadow-slate-950/40 backdrop-blur-xl lg:p-12'>
+                    <div className='mb-10 flex flex-col gap-6 rounded-[28px] border border-slate-800/90 bg-slate-900/80 p-8 shadow-inner shadow-slate-950/10 sm:flex-row sm:items-end sm:justify-between'>
+                        <div>
+                            <p className='text-sm uppercase tracking-[0.3em] text-cyan-300/80'>Settings</p>
+                            <h1 className='mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl'>
+                                Manage your profile & account
+                            </h1>
+                            <p className='mt-4 max-w-2xl text-slate-400'>
+                                Update the details below to keep your profile current and secure. Change your avatar,
+                                name, email, or password with one click.
+                            </p>
+                        </div>
+                        <div className='flex items-center gap-4 rounded-[28px] border border-cyan-400/10 bg-slate-950/90 px-5 py-4 shadow-lg shadow-cyan-500/5'>
+                            <div className='relative h-16 w-16 overflow-hidden rounded-3xl border border-cyan-400/20 bg-slate-800'>
+                                <img src={currentUser.avatar} alt='Profile' className='h-full w-full object-cover' />
+                            </div>
+                            <div>
+                                <p className='text-sm uppercase tracking-[0.25em] text-slate-500'>Signed in as</p>
+                                <p className='text-lg font-semibold text-white'>{currentUser.name}</p>
+                                <p className='text-sm text-slate-400'>{currentUser.email}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className='grid gap-8 lg:grid-cols-2'>
+                        <section className='rounded-[32px] border border-slate-800/80 bg-slate-950/85 p-8 shadow-2xl shadow-slate-950/20'>
+                            <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+                                <div>
+                                    <h2 className='text-2xl font-semibold text-white'>Update Profile</h2>
+                                    <p className='mt-1 text-sm text-slate-400'>
+                                        Change your display name, email address, or profile picture.
+                                    </p>
+                                </div>
+                                <button className='rounded-full bg-gradient-to-r from-cyan-500 to-sky-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:from-cyan-400 hover:to-sky-400'>
+                                    Edit avatar
+                                </button>
+                            </div>
+
+                            <form className='space-y-5'>
+                                <label className='block text-sm text-slate-300'>
+                                    <span className='mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500'>Profile picture</span>
+                                    <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+                                        <img src={currentUser.avatar} alt='Avatar preview' className='h-16 w-16 rounded-3xl object-cover border border-slate-700' />
+                                        <input
+                                            type='file'
+                                            className='block w-full rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm text-slate-100 file:mr-4 file:rounded-full file:border-0 file:bg-cyan-500 file:px-4 file:py-2 file:text-slate-950 file:font-semibold'
+                                        />
+                                    </div>
+                                </label>
+
+                                <label className='block text-sm text-slate-300'>
+                                    <span className='mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500'>Name</span>
+                                    <input
+                                        type='text'
+                                        defaultValue={currentUser.name}
+                                        className='w-full rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20'
+                                    />
+                                </label>
+
+                                <label className='block text-sm text-slate-300'>
+                                    <span className='mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500'>Email</span>
+                                    <input
+                                        type='email'
+                                        defaultValue={currentUser.email}
+                                        className='w-full rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20'
+                                    />
+                                </label>
+
+                                <button type='button' className='w-full rounded-3xl bg-gradient-to-r from-cyan-500 to-sky-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:from-cyan-400 hover:to-sky-400'>
+                                    Save profile changes
+                                </button>
+                            </form>
+                        </section>
+
+                        <section className='rounded-[32px] border border-slate-800/80 bg-slate-950/85 p-8 shadow-2xl shadow-slate-950/20'>
+                            <div className='mb-6'>
+                                <h2 className='text-2xl font-semibold text-white'>Change Password</h2>
+                                <p className='mt-1 text-sm text-slate-400'>
+                                    Keep your account secure by updating your password regularly.
+                                </p>
+                            </div>
+
+                            <form className='space-y-5'>
+                                <label className='block text-sm text-slate-300'>
+                                    <span className='mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500'>Current password</span>
+                                    <input
+                                        type='password'
+                                        placeholder='••••••••'
+                                        className='w-full rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20'
+                                    />
+                                </label>
+
+                                <label className='block text-sm text-slate-300'>
+                                    <span className='mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500'>New password</span>
+                                    <input
+                                        type='password'
+                                        placeholder='••••••••'
+                                        className='w-full rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20'
+                                    />
+                                </label>
+
+                                <label className='block text-sm text-slate-300'>
+                                    <span className='mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500'>Confirm password</span>
+                                    <input
+                                        type='password'
+                                        placeholder='••••••••'
+                                        className='w-full rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20'
+                                    />
+                                </label>
+
+                                <button type='button' className='w-full rounded-3xl bg-slate-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-600'>
+                                    Update password
+                                </button>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Settings
