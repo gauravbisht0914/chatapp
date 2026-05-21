@@ -1,8 +1,20 @@
 import './App.css'
 import { SideBar } from './components/index.js'
 import { Outlet } from 'react-router'
+import socketConnection from './socket.js'
+
 
 function App() {
+
+
+  useEffect(() => {
+    const disconnectSocket = socketConnection()
+
+    return () => {
+      disconnectSocket()
+    }
+  }, [])
+
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100'>
       <div className='relative min-h-screen overflow-hidden'>
