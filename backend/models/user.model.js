@@ -13,7 +13,13 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate: {
+            validator: function (v) {
+                return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v)  ;
+            },
+            message: "Please enter a valid email"
+        }
     },
     password: {
         type: String,
@@ -35,24 +41,20 @@ const userSchema = new mongoose.Schema({
     },
 
     emailVerificationToken: String,
-    emailVerificationTokenExpiredAt: String,
+    emailVerificationTokenExpiredAt: String,    
 
 }, { timestamps: true })
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
     if (this.isModified("password")) {
-        {
-            const hashedPassword = await bcrypt.hash(this.password, 10)
-            this.password = hashedPassword
-        }
-        next()
+        this.password = await bcrypt.hash(this.password, 10);
     }
-})
+});
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password)
 }
 
 const User = mongoose.model("User", userSchema)
-
+    
 export default User

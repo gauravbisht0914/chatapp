@@ -1,7 +1,8 @@
 import './App.css'
 import { SideBar } from './components/index.js'
 import { Outlet } from 'react-router'
-import socketConnection from './socket.js'
+import socketConnection from './utiils/socket.js'
+import { useEffect } from 'react'
 
 
 function App() {

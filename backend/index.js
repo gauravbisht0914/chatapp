@@ -3,23 +3,28 @@ import cors from "cors";
 import { configDotenv } from "dotenv";
 import connectDB from "./DB/connect.js";
 import cookieParser from "cookie-parser";
+import { socketConnection } from "./socket/socket.js";
+import { createServer } from "http";
 import { Server } from "socket.io";
+import userRouter from "./routes/user.routes.js";
 
 configDotenv();
 
-const app = express();
+export const app = express();
 const PORT = process.env.PORT || 5000;
-const server = createServer(app);
 
-const io = new Server(server);
+export const server = createServer(app);
 
-io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
 
-    socket.on("disconnect", () => {
-        console.log("A user disconnected:", socket.id);
-    });
+export const io = new Server(server, {
+    cors: {
+        origin: "http://127.0.0.1:5173",
+        methods: ["GET", "POST"],
+        credentials: true,
+    }
 });
+
+socketConnection(io)
 
 
 var corsOptions = {
@@ -46,6 +51,9 @@ app.use(cors(corsOptions))
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json());
 app.use(cookieParser())
+
+app.use("/api/auth", userRouter)
+
 
 app.get("/", (req, res) => {
     res.send("Chat app backend running");
