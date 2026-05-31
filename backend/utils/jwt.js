@@ -5,8 +5,7 @@ export function generateToken(user) {
         id: user._id,
         username: user.username,
         email: user.email,
-        profilePicture?: user.profilePicture,
+        profilePicture: user.profilePicture,
     }
-    return jwt.sign(payload, process.env.JWT_SECRET )
-
+    return jwt.sign(payload, process.env.JWT_SECRET)
 }

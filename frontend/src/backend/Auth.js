@@ -1,0 +1,67 @@
+import axios from 'axios';
+
+class Auth {
+  constructor() {
+    this.user = null;
+    this.backendUrl = process.env.BACKEND_URL || '';
+  }
+
+  async login({ email, password }) {
+    try {
+      const response = await axios.post(this.backendUrl + '/api/auth/login', { email, password }, {
+        withCredentials: true,
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      return data
+
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  }
+
+  async signup({ email, password, username }) {
+    try {
+      const response = await axios.post(this.backendUrl + '/api/auth/signup', { email, password, username });
+
+      if (!response.ok) {
+        throw new Error('Signup failed');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+  }
+
+  logout() {
+    this.token = null;
+    this.user = null;
+    localStorage.removeItem('token');
+  }
+
+  isAuthenticated() {
+    return !!this.token;
+  }
+
+  getToken() {
+    return this.token;
+  }
+
+  getUser() {
+    return this.user;
+  }
+
+  setUser(user) {
+    this.user = user;
+  }
+}
+
+export default new Auth();

@@ -1,23 +1,37 @@
-import User from "../models/user.models";
+import User from "../models/user.model.js";
 import jwt from "jsonwebtoken"
-import { generateToken } from "../utils/jwt";
-import randomNumber from "../utils/randomNumber";
+import { generateToken } from "../utils/jwt.js";
+import randomNumber from "../utils/randomNumber.js";
+import validator from "validator"
 
 async function createUser(req, res) {
     try {
-        const { email, password } = req.body
+        console.log(req)
+        const { username, email, password } = req.body
 
-        if (!email || !password) {
+        if (!email || !password || !username) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
-        const existingUser = await User.findOne({ $or: [{ email }] })
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({ message: "Please enter a valid email" })
+        }
+
+        if(!validator.isLength(username, { min: 2, max: 25 })) {
+            return res.status(400).json({ message: "Username must be between 2 and 25 characters" })
+        }
+
+        if(!validator.isLength(password, { min: 6 })) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" })
+        }
+
+        const existingUser = await User.findOne({ $or: [{ email }, { username }] })
 
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" })
         }
         const newUser = await User.create({
-            email, password
+            username, email, password
         })
 
         const verificationToken = randomNumber()
@@ -26,6 +40,8 @@ async function createUser(req, res) {
         newUser.emailVerificationTokenExpiredAt = Date.now() + 15 * 60 * 1000;
 
         await newUser.save()
+
+        console.log(newUser)
 
         const token = generateToken(newUser)
         res.status(201)
@@ -123,10 +139,10 @@ async function verifyEmail(req, res) {
         console.error(error)
         res.status(500).json({ message: "Server error" })
     }
+}
 
-    function isAuthenticated(req, res) {
-        return res.status(200).json(req.user)
-    }
+function isAuthenticated(req, res) {
+    return res.status(200).json(req.user)
 }
 
 export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated }
