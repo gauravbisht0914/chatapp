@@ -3,7 +3,7 @@ import axios from 'axios';
 class Auth {
   constructor() {
     this.user = null;
-    this.backendUrl = process.env.BACKEND_URL || '';
+    this.backendUrl = import.meta.env.VITE_BACKEND_URL || ""; 
   }
 
   async login({ email, password }) {

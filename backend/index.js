@@ -7,7 +7,9 @@ import { socketConnection } from "./socket/socket.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import userRouter from "./routes/user.routes.js";
+import dns from "dns"
 
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 configDotenv();
 
 export const app = express();
@@ -18,7 +20,7 @@ export const server = createServer(app);
 
 export const io = new Server(server, {
     cors: {
-        origin: "http://127.0.0.1:5173",
+        origin: "http://localhost:5173",
         methods: ["GET", "POST"],
         credentials: true,
     }

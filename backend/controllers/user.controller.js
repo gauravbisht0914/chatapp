@@ -6,7 +6,6 @@ import validator from "validator"
 
 async function createUser(req, res) {
     try {
-        console.log(req)
         const { username, email, password } = req.body
 
         if (!email || !password || !username) {
@@ -41,8 +40,6 @@ async function createUser(req, res) {
 
         await newUser.save()
 
-        console.log(newUser)
-
         const token = generateToken(newUser)
         res.status(201)
             .cookie("token", token, {
@@ -53,8 +50,7 @@ async function createUser(req, res) {
             .json({ message: "User created successfully" })
     }
     catch (error) {
-        console.error(error)
-        res.status(500).json({ message: "Server error" })
+        res.status(500).json({ message: error.message || "Server error" })
     }
 }
 
@@ -66,10 +62,18 @@ async function loginUser(req, res) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
+        if(!validator.isEmail(email)) {
+            return res.status(400).json({ message: "Please enter a valid email" })
+        }
+
+        if(!validator.isLength(password, { min: 6 })) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" })
+        }
+
         const user = await User.findOne({ email })
 
         if (!user) {
-            return res.status(400).json({ message: "Invalid credentials" })
+            return res.status(400).json({ message: "Invalid Email." })
         }
 
         const isMatch = await user.comparePassword(password)
@@ -88,8 +92,7 @@ async function loginUser(req, res) {
             .json({ message: "Logged in successfully" })
     }
     catch (error) {
-        console.error(error)
-        res.status(500).json({ message: "Server error" })
+        res.status(500).json({ message: error.message || "Server error" })
     }
 }
 
@@ -136,8 +139,7 @@ async function verifyEmail(req, res) {
         res.status(200).json({ message: "Email verified successfully" })
     }
     catch (error) {
-        console.error(error)
-        res.status(500).json({ message: "Server error" })
+        res.status(500).json({ message: error.message || "Server error" })
     }
 }
 
