@@ -17,7 +17,7 @@ function SideBar({ className }) {
                 <div>
                     <div className='mb-8'>
                         <p className='text-xs font-semibold uppercase tracking-[0.35em] text-cyan-300/80'>Welcome back</p>
-                        <h1 className='mt-4 text-3xl font-semibold text-white'>Aurora Chat</h1>
+                        <h1 className='mt-4 text-3xl font-semibold text-white'>Chat App</h1>
                         <p className='mt-2 max-w-sm text-sm text-slate-400'>A polished messaging experience with dreamy glass layers and vivid accents.</p>
                     </div>
 

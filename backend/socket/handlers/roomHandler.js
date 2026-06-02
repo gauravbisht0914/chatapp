@@ -1,6 +1,6 @@
 import roomId from "../../models/roomId.model.js";
 
-async function conversationHandler(socket) {
+async function roomHandler(socket) {
 
     socket.on("createRoom", async (participantsId, cb) => {
 
@@ -9,18 +9,9 @@ async function conversationHandler(socket) {
             let room = await roomId.findOne({
                 participants: {
                     $all: participantsId
-                },
+                }})
 
-                $expr: {
-                    $eq: [
-                        { $size: "$participants" },
-                        participantsId.length
-                    ]
-                }
-
-            }).select("uniqueRoomName")
-
-            if (!room) {
+            if(!room) {
 
                 room = await roomId.create({
                     participants: participantsId,
@@ -28,9 +19,10 @@ async function conversationHandler(socket) {
 
             }
 
-            socket.join(room.uniqueRoomName)
+            socket.join(room._id.toString())
 
             cb({
+                message:"Room joined successfully",
                 roomId: room._id,
             })
 
@@ -43,5 +35,5 @@ async function conversationHandler(socket) {
 }
 
 export {
-    conversationHandler
+    roomHandler
 }

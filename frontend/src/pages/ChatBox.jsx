@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import {socket} from "../utils/socket.js"
 
 function ChatBubble({ message, isMe }) {
     return (
@@ -47,6 +48,10 @@ export default function ChatBox() {
         }
         setMessages((prev) => [...prev, next])
         setInput('')
+        socket.emit('sendMessage', { roomId: "", senderId: activeUser.id, content: next.text }, (response) => {
+        console.log(response);
+    })
+        console.log(socket)
     }
 
     function handleKey(e) {

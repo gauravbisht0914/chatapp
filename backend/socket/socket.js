@@ -1,5 +1,5 @@
-import { conversationHandler } from "./handlers/conversationHandler.js";
-
+import { roomHandler } from "./handlers/roomHandler.js";
+import messageHandler from "./handlers/messageHandler.js";
 
 export function socketConnection(io) {
 
@@ -10,6 +10,7 @@ export function socketConnection(io) {
             console.log("A user disconnected:", socket.id);
         });
 
-        conversationHandler(socket)
+        roomHandler(socket)
+        messageHandler(socket)
     });
 }

@@ -11,4 +11,5 @@ const roomIdSchema = new mongoose.Schema({
 });
 
 const RoomId = mongoose.model('RoomId', roomIdSchema);
+
 export default RoomId;
