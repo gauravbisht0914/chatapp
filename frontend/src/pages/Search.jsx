@@ -59,14 +59,14 @@ export default function Search() {
     return (
         <div className='min-h-screen bg-transparent px-4 py-8 sm:px-6 lg:px-8'>
             <div className='mx-auto max-w-5xl space-y-8'>
-                <section className='rounded-[32px] border border-white/10 bg-slate-950/85 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl'>
+                <section className='rounded-[32px] border border-white/10 bg-[#0e0e0e] p-6 shadow-2xl shadow-white/10'>
                     <div className='max-w-2xl space-y-4'>
-                        <p className='text-sm font-semibold uppercase tracking-[0.35em] text-cyan-300/80'>People search</p>
+                        <p className='text-sm font-semibold uppercase tracking-[0.35em] text-slate-400'>People search</p>
                         <h1 className='text-4xl font-semibold text-white'>Discover the right profile instantly.</h1>
-                        <p className='text-sm leading-6 text-slate-400'>Search by name, username, email, role, or location and browse results with elegant card styling.</p>
+                        <p className='text-sm leading-6 text-slate-400'>Search by name, username, email, role, or location and browse results with clean card panels.</p>
                     </div>
 
-                    <div className='mt-8 rounded-[28px] border border-slate-800 bg-slate-900/80 p-5 shadow-inner shadow-slate-950/20'>
+                    <div className='mt-8 rounded-[28px] border border-white/10 bg-[#0b0b0b] p-5 shadow-inner shadow-white/5'>
                         <label className='block text-sm font-medium text-slate-300'>Search users</label>
                         <div className='mt-4'>
                             <input
@@ -74,13 +74,13 @@ export default function Search() {
                                 value={query}
                                 onChange={(event) => setQuery(event.target.value)}
                                 placeholder='Search by name, username, email, role, location'
-                                className='w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-5 py-4 text-sm text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20'
+                                className='w-full rounded-3xl border border-white/10 bg-[#090909] px-5 py-4 text-sm text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10'
                             />
                         </div>
                     </div>
                 </section>
 
-                <section className='rounded-[32px] border border-white/10 bg-slate-950/80 p-6 shadow-2xl shadow-slate-950/30'>
+                <section className='rounded-[32px] border border-white/10 bg-[#0e0e0e] p-6 shadow-2xl shadow-white/10'>
                     <div className='mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                         <div>
                             <h2 className='text-2xl font-semibold text-white'>Results</h2>
@@ -91,8 +91,8 @@ export default function Search() {
                     </div>
 
                     {filteredUsers.length === 0 ? (
-                        <div className='rounded-[28px] border border-dashed border-slate-700 bg-slate-900/80 px-6 py-10 text-center'>
-                            <p className='text-sm font-medium text-slate-200'>No users match your search query.</p>
+                        <div className='rounded-[28px] border border-dashed border-white/10 bg-[#0b0b0b] px-6 py-10 text-center'>
+                            <p className='text-sm font-medium text-white'>No users match your search query.</p>
                             <p className='mt-2 text-sm text-slate-400'>Try a different name, username, or role.</p>
                         </div>
                     ) : (
@@ -100,10 +100,10 @@ export default function Search() {
                             {filteredUsers.map((user) => (
                                 <div
                                     key={user.id}
-                                    className='overflow-hidden rounded-[28px] border border-slate-800 bg-slate-900/80 p-5 shadow-xl shadow-slate-950/10 transition hover:-translate-y-1 hover:border-cyan-500/40'
+                                    className='overflow-hidden rounded-[28px] border border-white/10 bg-[#0b0b0b] p-5 shadow-xl shadow-white/5 transition hover:-translate-y-1 hover:border-white/20'
                                 >
                                     <div className='flex items-center gap-4'>
-                                        <img src={user.avatar} alt={user.name} className='h-16 w-16 rounded-3xl object-cover ring-2 ring-cyan-400/20' />
+                                        <img src={user.avatar} alt={user.name} className='h-16 w-16 rounded-3xl object-cover ring-2 ring-white/10' />
                                         <div>
                                             <h3 className='text-lg font-semibold text-white'>{user.name}</h3>
                                             <p className='text-sm text-slate-400'>@{user.username}</p>
