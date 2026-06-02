@@ -54,13 +54,15 @@ class Auth {
   }
 
   async isAuthenticated() {
-    try{
-    const res = await axios.get(this.backendUrl + "/api/auth/is-authenticated", {
-      withCredentials: true
-    });
-    return res
-    }
-    catch(error) {
+    try {
+      const res = await axios.get(
+        this.backendUrl + "/api/auth/is-authenticated",
+        {
+          withCredentials: true,
+        },
+      );
+      return res;
+    } catch (error) {
       console.error("Authentication error:", error);
       return false;
     }

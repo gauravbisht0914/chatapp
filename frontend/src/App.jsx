@@ -6,29 +6,28 @@ import { useEffect } from "react";
 import Auth from "./backend/Auth.js";
 
 function App() {
-  
   useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      const res = await Auth.isAuthenticated();
+    const checkAuth = async () => {
+      try {
+        const res = await Auth.isAuthenticated();
 
-      if (res.status === 200) {
-        Auth.setUser(res.data);
-        console.log(res.data);
+        if (res.status === 200) {
+          Auth.setUser(res.data);
+          console.log(res.data);
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
       }
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-    }
-  };
+    };
 
-  checkAuth();
+    checkAuth();
 
-  const disconnectSocket = socketConnection();
+    const disconnectSocket = socketConnection();
 
-  return () => {
-    disconnectSocket();
-  };
-}, []);
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#090909] text-slate-100">

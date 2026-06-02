@@ -64,7 +64,9 @@ export default function Notifications() {
           ))}
 
           <div className="rounded-xl border border-dashed border-white/10 bg-[#0b0b0b] p-6 text-center">
-            <p className="text-sm text-slate-400">Check back later for new notifications.</p>
+            <p className="text-sm text-slate-400">
+              Check back later for new notifications.
+            </p>
           </div>
         </section>
       </div>

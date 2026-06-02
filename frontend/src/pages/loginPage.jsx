@@ -36,8 +36,7 @@ function LoginPage() {
         username: formData.username,
       });
       console.log("Signup successful:", res);
-    //   navigate("/");
-
+      //   navigate("/");
     } catch (error) {
       console.error("Login error:", error);
       setMessage("Login failed. Please try again.");

@@ -5,11 +5,4 @@ import Settings from "./Settings";
 import Notifications from "./Notifications";
 import LoginPage from "./loginPage";
 
-export {
-    NotFound,
-    ChatBox,
-    Search,
-    Settings,
-    Notifications,
-    LoginPage
-}
+export { NotFound, ChatBox, Search, Settings, Notifications, LoginPage };
