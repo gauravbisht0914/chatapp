@@ -144,7 +144,12 @@ async function verifyEmail(req, res) {
 }
 
 function isAuthenticated(req, res) {
-    return res.status(200).json(req.user)
+   try{
+    return res.status(200).json(req.user);
+   }
+   catch(error) {
+    res.status(500).json({ message: error.message || "Server error" })
+   }
 }
 
 export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated }

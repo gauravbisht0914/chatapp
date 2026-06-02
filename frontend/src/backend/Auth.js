@@ -1,42 +1,48 @@
-import axios from 'axios';
+import axios from "axios";
 
 class Auth {
   constructor() {
     this.user = null;
-    this.backendUrl = import.meta.env.VITE_BACKEND_URL || ""; 
+    this.backendUrl = import.meta.env.VITE_BACKEND_URL || "";
   }
 
   async login({ email, password }) {
     try {
-      const response = await axios.post(this.backendUrl + '/api/auth/login', { email, password }, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        this.backendUrl + "/api/auth/login",
+        { email, password },
+        {
+          withCredentials: true,
+        },
+      );
+      console.log(response);
 
-      if (!response.ok) {
-        throw new Error('Login failed');
+      if (response.statusText !== "OK") {
+        throw new Error("Login failed");
       }
 
-      const data = await response.json();
-      return data
-
+      return response;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       throw error;
     }
   }
 
   async signup({ email, password, username }) {
     try {
-      const response = await axios.post(this.backendUrl + '/api/auth/signup', { email, password, username });
+      const response = await axios.post(this.backendUrl + "/api/auth/signup", {
+        email,
+        password,
+        username,
+      });
 
-      if (!response.ok) {
-        throw new Error('Signup failed');
+      if (!response.statusText !== "OK") {
+        throw new Error("Signup failed");
       }
 
-      const data = await response.json();
-      return data;
+      return response;
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error("Signup error:", error);
       throw error;
     }
   }
@@ -44,11 +50,20 @@ class Auth {
   logout() {
     this.token = null;
     this.user = null;
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
   }
 
-  isAuthenticated() {
-    return !!this.token;
+  async isAuthenticated() {
+    try{
+    const res = await axios.get(this.backendUrl + "/api/auth/is-authenticated", {
+      withCredentials: true
+    });
+    return res
+    }
+    catch(error) {
+      console.error("Authentication error:", error);
+      return false;
+    }
   }
 
   getToken() {

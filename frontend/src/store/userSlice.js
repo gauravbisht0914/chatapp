@@ -7,6 +7,8 @@ const initialState = {
     isVerified:false,
     profilePicture:"",
     status:"offline",
+    createdAt:"",
+    updatedAt:"",
 };
 
 export const userSlice = createSlice({
@@ -14,12 +16,22 @@ export const userSlice = createSlice({
     initialState,
     reducers:{
         setUser:(state, action) => {
-            const { username, email, isVerified, profilePicture, status } = action.payload;
+            const {
+              username,
+              email,
+              isVerified,
+              profilePicture,
+              status,
+              createdAt,
+              updatedAt,
+            } = action.payload;
             state.username = username;
             state.email = email;
             state.isVerified = isVerified;
             state.profilePicture = profilePicture;
             state.status = status;
+            state.createdAt = createdAt;
+            state.updatedAt = updatedAt;
         },
         clearUser:(state) => {
             state.username = "";
@@ -27,6 +39,8 @@ export const userSlice = createSlice({
             state.isVerified = false;
             state.profilePicture = "";
             state.status = "offline";
+            state.createdAt = "";
+            state.updatedAt = "";
         },
     },
 });
