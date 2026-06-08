@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { socket } from "../utils/socket.js";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { setRoomId } from "../store/userSlice.js";
+import { useDispatch } from "react-redux";
 
 function ChatBubble({ message, isMe }) {
   return (
@@ -21,10 +25,13 @@ function ChatBubble({ message, isMe }) {
 }
 
 export default function ChatBox() {
+  const chatId = useParams().id;
+  const user = useSelector((state) => state) || { _id: "" };
+  const dispatch = useDispatch();
+
   const [messages, setMessages] = useState([
     { id: 1, from: "them", text: "Hey! How are you?", time: "10:02 AM" },
     {
-      id: 2,
       from: "me",
       text: "I'm good — building a cool chat UI.",
       time: "10:03 AM",
@@ -56,6 +63,17 @@ export default function ChatBox() {
     }
   }, [messages, showVideo]);
 
+  useEffect(() => {
+    console.log("Joining room", chatId);
+    console.log("User ID:", user.user._id);
+    socket.emit("joinRoom", [user.user._id, chatId], (response) => {
+      console.log(response);
+      if (response.roomId) {
+        dispatch(setRoomId(response.roomId));
+      }
+    });
+  }, [user, chatId]);
+
   function sendMessage() {
     if (!input.trim()) return;
     const next = {
@@ -71,7 +89,11 @@ export default function ChatBox() {
     setInput("");
     socket.emit(
       "sendMessage",
-      { roomId: "", senderId: activeUser.id, content: next.text },
+      {
+        roomId: user.user.currentRoomId,
+        senderId: user.user._id,
+        content: next.text,
+      },
       (response) => {
         console.log(response);
       },

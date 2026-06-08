@@ -1,8 +1,9 @@
 import roomId from "../../models/roomId.model.js";
 
 async function roomHandler(socket) {
-  socket.on("createRoom", async (participantsId, cb) => {
+  socket.on("joinRoom", async (participantsId, cb) => {
     try {
+      // participantsId = participantsId.split(",").map((id) => id.trim());
       let room = await roomId.findOne({
         participants: {
           $all: participantsId,

@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  _id: "",
   username: "",
   email: "",
   isVerified: false,
@@ -8,6 +9,7 @@ const initialState = {
   status: "offline",
   createdAt: "",
   updatedAt: "",
+  currentRoomId: "",
 };
 
 export const userSlice = createSlice({
@@ -16,6 +18,7 @@ export const userSlice = createSlice({
   reducers: {
     setUser: (state, action) => {
       const {
+        _id,
         username,
         email,
         isVerified,
@@ -24,6 +27,8 @@ export const userSlice = createSlice({
         createdAt,
         updatedAt,
       } = action.payload;
+
+      state._id = _id;
       state.username = username;
       state.email = email;
       state.isVerified = isVerified;
@@ -32,7 +37,11 @@ export const userSlice = createSlice({
       state.createdAt = createdAt;
       state.updatedAt = updatedAt;
     },
+    setRoomId: (state, action) => {
+      state.currentRoomId = action.payload;
+    },
     clearUser: (state) => {
+      state._id = "";
       state.username = "";
       state.email = "";
       state.isVerified = false;
@@ -40,10 +49,11 @@ export const userSlice = createSlice({
       state.status = "offline";
       state.createdAt = "";
       state.updatedAt = "";
+      state.currentRoomId = "";
     },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, setRoomId, clearUser } = userSlice.actions;
 
 export default userSlice.reducer;

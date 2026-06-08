@@ -97,6 +97,7 @@ async function loginUser(req, res) {
         httpOnly: true,
         secure: true,
         sameSite: "None",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({ message: "Logged in successfully" });
   } catch (error) {
