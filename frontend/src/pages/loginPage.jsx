@@ -1,8 +1,16 @@
 import { useState } from "react";
 import Auth from "../backend/Auth.js";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user);
+
+  if (user) {
+    navigate("/");
+  }
+
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: "",
@@ -10,7 +18,6 @@ function LoginPage() {
     password: "",
   });
   const [message, setMessage] = useState("");
-  const navigate = useNavigate();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -44,6 +51,7 @@ function LoginPage() {
   };
 
   return (
+    user ? "" :
     <div className="min-h-screen bg-[#090909] text-white flex items-center justify-center px-4 py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_18%)]" />
       <div className="relative z-10 w-full max-w-[90%] overflow-hidden rounded-[32px] border border-white/10 bg-[#101010] shadow-2xl shadow-slate-950/40">

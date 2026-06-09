@@ -1,11 +1,10 @@
 import React from "react";
+import { useState } from "react";
+import { useSelector } from "react-redux";
 
 const Settings = () => {
-  const currentUser = {
-    name: "Alex Morgan",
-    email: "alex.morgan@example.com",
-    avatar: "https://i.pravatar.cc/150?img=32",
-  };
+  const currentUser = useSelector((state) => state.user);
+  console.log("Current user in Settings:", currentUser);
 
   return (
     <div className="min-h-screen bg-transparent px-4 py-8 sm:px-6 lg:px-8">
@@ -26,9 +25,9 @@ const Settings = () => {
               </p>
             </div>
             <div className="flex items-center gap-4 rounded-[28px] border border-white/10 bg-[#0b0b0b] px-5 py-4 shadow-lg shadow-white/5">
-              <div className="relative h-16 w-16 overflow-hidden rounded-3xl border border-white/10 bg-[#111111]">
+              <div className="relative h-16 w-16 overflow-hidden rounded-4xl border border-white/10 bg-[#111111]">
                 <img
-                  src={currentUser.avatar}
+                  src={currentUser.profileImage?.url}
                   alt="Profile"
                   className="h-full w-full object-cover"
                 />
@@ -38,7 +37,7 @@ const Settings = () => {
                   Signed in as
                 </p>
                 <p className="text-lg font-semibold text-white">
-                  {currentUser.name}
+                  {currentUser.username}
                 </p>
                 <p className="text-sm text-slate-400">{currentUser.email}</p>
               </div>
@@ -68,9 +67,9 @@ const Settings = () => {
                   </span>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <img
-                      src={currentUser.avatar}
+                      src={currentUser.profileImage?.url}
                       alt="Avatar preview"
-                      className="h-16 w-16 rounded-3xl object-cover border border-white/10"
+                      className="h-16 w-16 rounded-4xl object-cover border border-white/10"
                     />
                     <input
                       type="file"
@@ -85,7 +84,7 @@ const Settings = () => {
                   </span>
                   <input
                     type="text"
-                    defaultValue={currentUser.name}
+                    defaultValue={currentUser.username}
                     className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                   />
                 </label>

@@ -5,7 +5,7 @@ const initialState = {
   username: "",
   email: "",
   isVerified: false,
-  profilePicture: "",
+  profileImage: "",
   status: "offline",
   createdAt: "",
   updatedAt: "",
@@ -22,7 +22,7 @@ export const userSlice = createSlice({
         username,
         email,
         isVerified,
-        profilePicture,
+        profileImage,
         status,
         createdAt,
         updatedAt,
@@ -32,7 +32,7 @@ export const userSlice = createSlice({
       state.username = username;
       state.email = email;
       state.isVerified = isVerified;
-      state.profilePicture = profilePicture;
+      state.profileImage = profileImage;
       state.status = status;
       state.createdAt = createdAt;
       state.updatedAt = updatedAt;
@@ -45,7 +45,7 @@ export const userSlice = createSlice({
       state.username = "";
       state.email = "";
       state.isVerified = false;
-      state.profilePicture = "";
+      state.profileImage = "";
       state.status = "offline";
       state.createdAt = "";
       state.updatedAt = "";

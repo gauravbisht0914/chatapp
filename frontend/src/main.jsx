@@ -18,6 +18,8 @@ import {
 import App from "./App.jsx";
 import store from "./store/store";
 import { Provider } from "react-redux";
+import AuthProvider from "./components/AuthProvider.jsx";
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -35,6 +37,8 @@ const router = createBrowserRouter(
 );
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
+    <AuthProvider>
     <RouterProvider router={router} />
+    </AuthProvider>
   </Provider>,
 );
