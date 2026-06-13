@@ -2,20 +2,24 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
-    sender: {
+    senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    recipient: {
+    recipientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    roomId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RoomId",
       required: true,
     },
     roomIdName: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "RoomId",
-      required: true,
     },
     text: {
       type: String,
@@ -29,10 +33,6 @@ const messageSchema = new mongoose.Schema(
       public_id: {
         type: String,
       },
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
     },
   },
   {

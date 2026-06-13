@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { setRoomId } from "../store/userSlice.js";
 import { useDispatch } from "react-redux";
+import User from "../backend/User.js";
+import messageHandler from "../utils/sockets/messageHandler.js";
 
 function ChatBubble({ message, isMe }) {
   return (
@@ -26,7 +28,7 @@ function ChatBubble({ message, isMe }) {
 
 export default function ChatBox() {
   const chatId = useParams().id;
-  const user = useSelector((state) => state) || { _id: "" };
+  const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const [messages, setMessages] = useState([
@@ -45,10 +47,10 @@ export default function ChatBox() {
   ]);
 
   const [input, setInput] = useState("");
-  const [activeUser] = useState({
-    id: "u2",
-    name: "Alice Johnson",
-    avatar: "https://i.pravatar.cc/40?img=1",
+  const [activeUser, setActiveUser] = useState({
+    _id: "u2",
+    username: "Alice Johnson",
+    profileImage: "https://i.pravatar.cc/40?img=1",
     status: "online",
   });
   const [showVideo, setShowVideo] = useState(false);
@@ -64,15 +66,30 @@ export default function ChatBox() {
   }, [messages, showVideo]);
 
   useEffect(() => {
-    console.log("Joining room", chatId);
-    console.log("User ID:", user.user._id);
-    socket.emit("joinRoom", [user.user._id, chatId], (response) => {
-      console.log(response);
-      if (response.roomId) {
-        dispatch(setRoomId(response.roomId));
+    async function fetchUserDetails() {
+      try {
+        const user2 = await User.getUserDetails(chatId);
+        setActiveUser(user2);
+        console.log(user2);
+      } catch (error) {
+        console.log(error.message);
       }
-    });
-  }, [user, chatId]);
+    }
+
+    fetchUserDetails();
+
+    console.log("Joining room", chatId);
+    console.log("User ID:", user);
+
+    if (user._id) {
+      socket.emit("joinRoom", [user._id, chatId], (response) => {
+        console.log(response);
+        if (response.roomId) {
+          dispatch(setRoomId(response.roomId));
+        }
+      });
+    }
+  }, [user._id]);
 
   function sendMessage() {
     if (!input.trim()) return;
@@ -87,18 +104,12 @@ export default function ChatBox() {
     };
     setMessages((prev) => [...prev, next]);
     setInput("");
-    socket.emit(
-      "sendMessage",
-      {
-        roomId: user.user.currentRoomId,
-        senderId: user.user._id,
-        content: next.text,
-      },
-      (response) => {
-        console.log(response);
-      },
-    );
-    console.log(socket);
+    messageHandler({
+      roomId: user.currentRoomId,
+      senderId: user._id,
+      content: next.text,
+      recipientId: chatId,
+    });
   }
 
   function handleKey(e) {
@@ -160,16 +171,16 @@ export default function ChatBox() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <img
-              src={activeUser.avatar}
-              alt={activeUser.name}
-              className="h-14 w-14 rounded-3xl object-cover ring-2 ring-white/20"
+              src={activeUser.profileImage?.url}
+              alt={activeUser.username}
+              className="h-14 w-14 rounded-4xl object-cover ring-2 ring-white/20"
             />
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
                 Live chat
               </p>
               <h2 className="text-2xl font-semibold text-white">
-                {activeUser.name}
+                {activeUser.username}
               </h2>
               <p className="text-sm text-slate-400">
                 Status: <span className="text-white">{activeUser.status}</span>
@@ -243,7 +254,7 @@ export default function ChatBox() {
 
       {showCallToast && (
         <div className="fixed bottom-6 right-6 rounded-3xl bg-[#0d0d0d] px-4 py-3 text-sm text-slate-200 shadow-2xl shadow-white/10">
-          Calling {activeUser.name}…
+          Calling {activeUser.username}…
         </div>
       )}
 
@@ -253,8 +264,8 @@ export default function ChatBox() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={activeUser.avatar}
-                  alt={activeUser.name}
+                  src={activeUser.profileImage}
+                  alt={activeUser.username}
                   className="h-12 w-12 rounded-3xl object-cover ring-2 ring-white/10"
                 />
                 <div>
@@ -262,7 +273,7 @@ export default function ChatBox() {
                     Video call
                   </p>
                   <h3 className="text-xl font-semibold text-white">
-                    {activeUser.name}
+                    {activeUser.username}
                   </h3>
                 </div>
               </div>

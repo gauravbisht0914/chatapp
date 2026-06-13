@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const roomIdSchema = new mongoose.Schema(
   {
-    participants: [
+    recipients: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

@@ -9,13 +9,15 @@ function AuthProvider({ children }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    let res
     const checkAuth = async () => {
       try {
-        let res = await Auth.isAuthenticated();
+        res = await Auth.isAuthenticated();
         console.log(res);
         if (res.status === 200) {
           console.log(res.data);
           dispatch(setUser(res.data));
+          const disconnectSocket = socketConnection(res.data._id);
         } else {
           console.log("loll");
         }
@@ -26,7 +28,6 @@ function AuthProvider({ children }) {
 
     checkAuth();
 
-    const disconnectSocket = socketConnection();
 
     return () => {
       disconnectSocket();

@@ -68,14 +68,6 @@ class Auth {
     }
   }
 
-  getToken() {
-    return this.token;
-  }
-
-  getUser() {
-    return this.user;
-  }
-
   setUser(user) {
     this.user = user;
   }

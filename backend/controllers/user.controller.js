@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import { generateToken } from "../utils/jwt.js";
 import randomNumber from "../utils/randomNumber.js";
 import validator from "validator";
+import mongooese from "mongoose";
+
 
 async function createUser(req, res) {
   try {
@@ -161,4 +163,30 @@ function isAuthenticated(req, res) {
   }
 }
 
-export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated };
+async function getUserDetails(req,res){
+  try{
+    const {userId} = req.params;
+
+    if(!mongooese.Types.ObjectId.isValid(userId)){
+      return res.status(400).json({ message: "Invalid User ID" });
+    }
+    
+    if(!userId){
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId).select("_id username profileImage createdAt updatedAt isVerified ");
+
+    if(!user){
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log(userId, user);
+
+    return res.status(200).json(user);
+  }catch(error){
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+}
+
+export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated, getUserDetails  };
