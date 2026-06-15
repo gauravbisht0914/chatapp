@@ -1,12 +1,25 @@
 import "./App.css";
 import { SideBar } from "./components/index.js";
 import { Outlet } from "react-router";
-
+import { checkUserAuth } from "./store/userSlice";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { LoginPage } from "./pages";
 
 function App() {
+  const user = useSelector((state) => state.user.isUserAuthenticated);
+  console.log(user)
+  let dispatch = useDispatch();
 
+  React.useEffect(() => {
+    try {
+      dispatch(checkUserAuth());
+    } catch (error) {
+      console.log(error);
+    }
+  }, [dispatch]);
 
-  return (
+  return user ? (
     <div className="min-h-screen bg-[#090909] text-slate-100">
       <div className="relative min-h-screen overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.04),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.04),transparent_18%)]" />
@@ -22,6 +35,8 @@ function App() {
         </div>
       </div>
     </div>
+  ) : (
+    <LoginPage />
   );
 }
 

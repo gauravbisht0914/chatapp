@@ -64,7 +64,7 @@ class Auth {
       return res;
     } catch (error) {
       console.error("Authentication error:", error);
-      return false;
+      throw error
     }
   }
 

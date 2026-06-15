@@ -1,4 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import Auth from "@/backend/Auth";
+import socketConnection from "@/utils/socket.js";
 
 const initialState = {
   _id: "",
@@ -10,7 +12,19 @@ const initialState = {
   createdAt: "",
   updatedAt: "",
   currentRoomId: "",
+  isUserAuthenticated: false,
 };
+
+export const checkUserAuth = createAsyncThunk(
+  "user/userAuthStatus",
+  async () => {
+    const res = await Auth.isAuthenticated();
+    if (res.status === 200) {
+      socketConnection(res.data._id);
+      return res.data;
+    }
+  },
+);
 
 export const userSlice = createSlice({
   name: "user",
@@ -52,8 +66,20 @@ export const userSlice = createSlice({
       state.currentRoomId = "";
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(checkUserAuth.fulfilled, (state, action) => {
+        return {
+          ...state,
+          ...action.payload,
+          isUserAuthenticated: true,
+        };
+      })
+      .addCase(checkUserAuth.rejected, (state) => {
+        state.isUserAuthenticated = false;
+      });
+  },
 });
 
 export const { setUser, setRoomId, clearUser } = userSlice.actions;
-
 export default userSlice.reducer;

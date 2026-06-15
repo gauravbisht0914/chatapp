@@ -13,18 +13,14 @@ import {
   Search,
   Settings,
   Notifications,
-  LoginPage,
 } from "./pages/index.js";
 import App from "./App.jsx";
 import store from "./store/store";
 import { Provider } from "react-redux";
-import AuthProvider from "./components/AuthProvider.jsx";
-
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
-      <Route path="/login" element={<LoginPage />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/" element={<App />}>
         <Route path="/chat/:id" element={<ChatBox />} />
@@ -37,8 +33,6 @@ const router = createBrowserRouter(
 );
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <AuthProvider>
     <RouterProvider router={router} />
-    </AuthProvider>
   </Provider>,
 );
