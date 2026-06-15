@@ -9,7 +9,7 @@ function AuthProvider({ children }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    let res
+    let res;
     const checkAuth = async () => {
       try {
         res = await Auth.isAuthenticated();
@@ -17,7 +17,8 @@ function AuthProvider({ children }) {
         if (res.status === 200) {
           console.log(res.data);
           dispatch(setUser(res.data));
-          const disconnectSocket = socketConnection(res.data._id);
+
+          socketConnection(res.data._id);
         } else {
           console.log("loll");
         }
@@ -27,17 +28,9 @@ function AuthProvider({ children }) {
     };
 
     checkAuth();
-
-
-    return () => {
-      disconnectSocket();
-    };
   }, []);
 
-
   return children;
-
-
 }
 
 export default AuthProvider;

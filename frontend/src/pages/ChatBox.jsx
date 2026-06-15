@@ -3,6 +3,7 @@ import { socket } from "../utils/socket.js";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { setRoomId } from "../store/userSlice.js";
+import { fetchMessages } from "@/store/messageSlice.js";
 import { useDispatch } from "react-redux";
 import User from "../backend/User.js";
 import messageHandler from "../utils/sockets/messageHandler.js";
@@ -29,6 +30,9 @@ function ChatBubble({ message, isMe }) {
 export default function ChatBox() {
   const chatId = useParams().id;
   const user = useSelector((state) => state.user);
+  const storeMessages = useSelector((state) => state.message);
+  console.log(storeMessages);
+  console.log("LUND ");
   const dispatch = useDispatch();
 
   const [messages, setMessages] = useState([
@@ -86,6 +90,9 @@ export default function ChatBox() {
         console.log(response);
         if (response.roomId) {
           dispatch(setRoomId(response.roomId));
+          dispatch(
+            fetchMessages({ roomId: response.roomId, offset: 0, limit: 10 }),
+          );
         }
       });
     }

@@ -2,8 +2,8 @@
 import axios from "axios";
 
 class User {
-  constructor(backendUrl) {
-    this.backendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || "";
+  constructor() {
+    this.backendUrl = import.meta.env.VITE_BACKEND_URL || "";
   }
 
   async getUserDetails(userId) {

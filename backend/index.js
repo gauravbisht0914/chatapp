@@ -7,6 +7,7 @@ import { socketConnection } from "./socket/socket.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import userRouter from "./routes/user.routes.js";
+import messagesRouter from "./routes/messages.routes.js";
 import dns from "dns";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
@@ -52,6 +53,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", userRouter);
+app.use("/api/messages", messagesRouter);
 
 app.get("/", (req, res) => {
   res.send("Chat app backend running");
