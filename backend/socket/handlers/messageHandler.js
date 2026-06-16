@@ -29,9 +29,7 @@ async function messageHandler(socket) {
           }
 
           cb({
-            success: true,
-            message: "Message received successfully",
-            roomId: roomId,
+            ...newMessage._doc,
           });
         }
 

@@ -25,7 +25,11 @@ export const fetchMessages = createAsyncThunk(
 export const messageSlice = createSlice({
   name: "message",
   initialState,
-  reducers: {},
+  reducers: {
+    pushNewMessages:(state,action)=>{
+      state.push(action.payload)
+    }
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchMessages.fulfilled, (state, action) => {
       state.push(...action.payload);
@@ -33,4 +37,5 @@ export const messageSlice = createSlice({
   },
 });
 
+export const { pushNewMessages } = messageSlice.actions;
 export default messageSlice.reducer;

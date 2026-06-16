@@ -9,6 +9,7 @@ import User from "../backend/User.js";
 import messageHandler from "../utils/sockets/messageHandler.js";
 
 function ChatBubble({ message, isMe }) {
+  console.log(message, isMe)
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
@@ -20,7 +21,11 @@ function ChatBubble({ message, isMe }) {
       >
         <div className="text-sm leading-6">{message.text}</div>
         <div className="mt-2 text-right text-[11px] text-slate-400">
-          {message.time}
+          {new Date(message.createdAt).toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })}
         </div>
       </div>
     </div>
@@ -67,7 +72,7 @@ export default function ChatBox() {
     if (messagesRef.current) {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
-  }, [messages, showVideo]);
+  }, [storeMessages, showVideo]);
 
   useEffect(() => {
     async function fetchUserDetails() {
@@ -215,11 +220,11 @@ export default function ChatBox() {
         ref={messagesRef}
         className="flex-1 min-h-0 overflow-y-auto rounded-[32px] border border-white/10 bg-[#0b0b0b] p-4 shadow-inner shadow-white/10"
       >
-        {messages.map((message) => (
+        {storeMessages.map((message) => (
           <ChatBubble
-            key={message.id}
+            key={message._id}
             message={message}
-            isMe={message.from === "me"}
+            isMe={message.senderId === user._id}
           />
         ))}
       </div>

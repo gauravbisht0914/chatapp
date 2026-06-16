@@ -1,3 +1,5 @@
+import { pushNewMessages } from "@/store/messageSlice"
+import store from "@/store/store"
 import { io } from "socket.io-client"
 
 export const socket = io(`${import.meta.env.VITE_BACKEND_URL || ""}`, {
@@ -16,13 +18,11 @@ function socketConnection(userId) {
         console.log("Disconnected from server")
     })
     
-    socket.on("message", (data) => {
-        console.log("Received message:", data)
-    })
     console.log("Establishing socket connection for user:", `${userId}`);
     
     socket.on(`${userId}`, (data) => {
         console.log("Received message:", data);
+        store.dispatch(pushNewMessages(data));
       });
 
     // return () =>{

@@ -1,4 +1,6 @@
+import store from "@/store/store.js";
 import { socket } from "../socket.js";
+import { pushNewMessages } from "@/store/messageSlice.js";
 
 function messageHandler({ roomId, senderId, content, recipientId }) {
   socket.emit(
@@ -9,8 +11,8 @@ function messageHandler({ roomId, senderId, content, recipientId }) {
       content,
       recipientId,
     },
-    (response) => {
-      console.log(response);
+    (data) => {
+      store.dispatch(pushNewMessages(data));
     },
   );
 
