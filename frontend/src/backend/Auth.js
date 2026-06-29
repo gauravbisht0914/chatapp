@@ -47,12 +47,6 @@ class Auth {
     }
   }
 
-  logout() {
-    this.token = null;
-    this.user = null;
-    localStorage.removeItem("token");
-  }
-
   async isAuthenticated() {
     try {
       const res = await axios.get(
@@ -68,9 +62,6 @@ class Auth {
     }
   }
 
-  setUser(user) {
-    this.user = user;
-  }
 }
 
 export default new Auth();

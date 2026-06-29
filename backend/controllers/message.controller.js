@@ -1,4 +1,6 @@
 import Message from "../models/message.model.js";
+import RoomId from "../models/roomId.model.js";
+import mongoose from "mongoose";
 
 async function getMessages(req, res) {
   try {
@@ -14,7 +16,7 @@ async function getMessages(req, res) {
       roomId,
       $or: [{ senderId: user._id }, { recipientId: user._id }],
     })
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .skip(offset)
       .limit(limit);
 
@@ -28,7 +30,41 @@ async function getMessages(req, res) {
   }
 }
 
+async function getUserRecentChats(req, res) {
+  try {
+    const { _id } = req.user;
 
-export {
-    getMessages,
+    const rooms = await RoomId.aggregate([
+      {
+        $match: {
+          recipients: new mongoose.Types.ObjectId(_id),
+        },
+      },
+      {
+        $lookup: {
+          from: "messages",
+          localField: "_id",
+          foreignField: "roomId",
+          as: "latestMessage",
+          pipeline: [{ $sort: { createdAt: -1 } }, { $limit: 1 }],
+        },
+      },
+      {
+        $set: {
+          latestMessage: { $arrayElemAt: ["$latestMessage", 0] },
+        },
+      },
+      {
+        $sort: { "latestMessage.createdAt": -1, _id: 1 },
+      },
+    ]);
+
+    return res.status(200).json(rooms);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message || "Error fetching chats" });
+  }
 }
+
+export { getMessages, getUserRecentChats };

@@ -1,15 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { socket } from "../utils/socket.js";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { setRoomId } from "../store/userSlice.js";
 import { fetchMessages } from "@/store/messageSlice.js";
 import { useDispatch } from "react-redux";
 import User from "../backend/User.js";
 import messageHandler from "../utils/sockets/messageHandler.js";
 
 function ChatBubble({ message, isMe }) {
-  console.log(message, isMe)
+  console.log(message, isMe);
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
@@ -36,24 +35,17 @@ export default function ChatBox() {
   const chatId = useParams().id;
   const user = useSelector((state) => state.user);
   const storeMessages = useSelector((state) => state.message);
-  console.log(storeMessages);
-  console.log("LUND ");
-  const dispatch = useDispatch();
+  const [showVideo, setShowVideo] = useState(false);
+  const [showCallToast, setShowCallToast] = useState(false);
+  const [localStream, setLocalStream] = useState(null);
+  const [loadingOlderChats, setLoadingOlderChats] = useState(false);
+  const [roomId, setRoomId] = useState(null);
 
-  const [messages, setMessages] = useState([
-    { id: 1, from: "them", text: "Hey! How are you?", time: "10:02 AM" },
-    {
-      from: "me",
-      text: "I'm good — building a cool chat UI.",
-      time: "10:03 AM",
-    },
-    {
-      id: 3,
-      from: "them",
-      text: "Nice! Want to try a quick video call?",
-      time: "10:04 AM",
-    },
-  ]);
+  const messagesRef = useRef(null);
+  const localVideoRef = useRef(null);
+
+  console.log(storeMessages);
+  const dispatch = useDispatch();
 
   const [input, setInput] = useState("");
   const [activeUser, setActiveUser] = useState({
@@ -62,17 +54,20 @@ export default function ChatBox() {
     profileImage: "https://i.pravatar.cc/40?img=1",
     status: "online",
   });
-  const [showVideo, setShowVideo] = useState(false);
-  const [showCallToast, setShowCallToast] = useState(false);
-  const [localStream, setLocalStream] = useState(null);
-  const messagesRef = useRef(null);
-  const localVideoRef = useRef(null);
 
-  useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    }
-  }, [storeMessages, showVideo]);
+const hasScrolledToBottom = useRef(false);
+
+useLayoutEffect(() => {
+  if (
+    !hasScrolledToBottom.current &&
+    storeMessages.length > 0 &&
+    messagesRef.current
+  ) {
+    messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    hasScrolledToBottom.current = true;
+  }
+}, [storeMessages]);
+
 
   useEffect(() => {
     async function fetchUserDetails() {
@@ -94,7 +89,7 @@ export default function ChatBox() {
       socket.emit("joinRoom", [user._id, chatId], (response) => {
         console.log(response);
         if (response.roomId) {
-          dispatch(setRoomId(response.roomId));
+          setRoomId(response.roomId);
           dispatch(
             fetchMessages({ roomId: response.roomId, offset: 0, limit: 10 }),
           );
@@ -117,7 +112,7 @@ export default function ChatBox() {
     setMessages((prev) => [...prev, next]);
     setInput("");
     messageHandler({
-      roomId: user.currentRoomId,
+      roomId,
       senderId: user._id,
       content: next.text,
       recipientId: chatId,
@@ -130,6 +125,44 @@ export default function ChatBox() {
       sendMessage();
     }
   }
+
+  const previousHeightRef = useRef(0);
+  const isLoadingOlderRef = useRef(false);
+
+  const handleScroll = async (e) => {
+    if (e.currentTarget.scrollTop <= 50 && !isLoadingOlderRef.current) {
+      isLoadingOlderRef.current = true;
+      setLoadingOlderChats(true);
+
+      previousHeightRef.current = messagesRef.current.scrollHeight;
+      
+      try {
+        await dispatch(
+          fetchMessages({
+            roomId,
+            offset: storeMessages.length,
+            limit: 10,
+          }),
+        );
+      } finally {
+        isLoadingOlderRef.current = false;
+        setLoadingOlderChats(false);
+      }
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (previousHeightRef.current && messagesRef.current) {
+      const newHeight = messagesRef.current.scrollHeight;
+      const diff = newHeight - previousHeightRef.current;
+
+      if (diff > 0) {
+        messagesRef.current.scrollTop += diff;
+      }
+
+      previousHeightRef.current = 0;
+    }
+  }, [storeMessages]);
 
   function startCall(isVideo) {
     setShowCallToast(true);
@@ -178,7 +211,7 @@ export default function ChatBox() {
   }, [localStream]);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden rounded-[32px] bg-[#090909] p-4 md:p-6">
+    <div className="flex h-full flex-col overflow-hidden rounded-[32px] bg-[#090909] p-4 md:p-6">
       <div className="mb-5 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -218,8 +251,14 @@ export default function ChatBox() {
 
       <div
         ref={messagesRef}
+        onScroll={handleScroll}
         className="flex-1 min-h-0 overflow-y-auto rounded-[32px] border border-white/10 bg-[#0b0b0b] p-4 shadow-inner shadow-white/10"
       >
+        {loadingOlderChats ? (
+          <div className="flex  justify-center">
+            <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
+          </div>
+        ) : null}
         {storeMessages.map((message) => (
           <ChatBubble
             key={message._id}

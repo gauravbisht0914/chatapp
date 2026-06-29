@@ -1,3 +1,4 @@
+/* eslint-disable preserve-caught-error */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import Auth from "@/backend/Auth";
 import socketConnection from "@/utils/socket.js";
@@ -11,18 +12,18 @@ const initialState = {
   status: "offline",
   createdAt: "",
   updatedAt: "",
-  currentRoomId: "",
   isUserAuthenticated: false,
 };
 
 export const checkUserAuth = createAsyncThunk(
   "user/userAuthStatus",
   async () => {
-    const res = await Auth.isAuthenticated();
-    if (res.status === 200) {
-      socketConnection(res.data._id);
-      return res.data;
-    }
+      const res = await Auth.isAuthenticated();
+      if (res.status === 200) {
+        socketConnection(res.data._id);
+        return res.data;
+      }
+   
   },
 );
 
@@ -51,9 +52,6 @@ export const userSlice = createSlice({
       state.createdAt = createdAt;
       state.updatedAt = updatedAt;
     },
-    setRoomId: (state, action) => {
-      state.currentRoomId = action.payload;
-    },
     clearUser: (state) => {
       state._id = "";
       state.username = "";
@@ -63,23 +61,27 @@ export const userSlice = createSlice({
       state.status = "offline";
       state.createdAt = "";
       state.updatedAt = "";
-      state.currentRoomId = "";
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(checkUserAuth.fulfilled, (state, action) => {
-        return {
+        console.log("FULLFILLED TRIGGER")
+        let d = {
           ...state,
           ...action.payload,
           isUserAuthenticated: true,
         };
+        console.log(d)
+        console.log(state)
+        return d
       })
       .addCase(checkUserAuth.rejected, (state) => {
+        console.log('FAILEDD')
         state.isUserAuthenticated = false;
       });
   },
 });
 
-export const { setUser, setRoomId, clearUser } = userSlice.actions;
+export const { setUser, clearUser } = userSlice.actions;
 export default userSlice.reducer;

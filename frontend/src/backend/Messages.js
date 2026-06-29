@@ -8,7 +8,15 @@ class Messages {
   async fetchMessages(roomId, offset, limit) {
     const res = await axios.get(
       this.backendUrl +
-        `/api/messages/${roomId}?offset=${offset}&limit=${limit}`,
+        `/api/messages/d/${roomId}?offset=${offset}&limit=${limit}`,
+      { withCredentials: true },
+    );
+    return res;
+  }
+
+  async getUserRecentChats() {
+    const res = await axios.get(
+      this.backendUrl + `/api/messages/getUserRecentChats`,
       { withCredentials: true },
     );
     return res;

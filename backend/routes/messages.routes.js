@@ -1,10 +1,13 @@
 import express from "express";
-import { getMessages } from "../controllers/message.controller.js";
+import {
+  getMessages,
+  getUserRecentChats,
+} from "../controllers/message.controller.js";
 import auth from "../middlewares/auth.js";
 
 const messagesRouter = express.Router();
 
-
-messagesRouter.get("/:roomId", auth,getMessages);
+messagesRouter.get("/d/:roomId", auth, getMessages);
+messagesRouter.get("/getUserRecentChats", auth, getUserRecentChats);
 
 export default messagesRouter;

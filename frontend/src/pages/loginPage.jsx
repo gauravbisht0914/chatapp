@@ -1,17 +1,19 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import Auth from "../backend/Auth.js";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { checkUserAuth } from "@/store/userSlice.js";
 
 function LoginPage() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log(user._id)
-      if (user._id) {
-    navigate("/");
-  }
+    console.log(user._id);
+    if (user._id) {
+      navigate("/");
+    }
   }, [user]);
 
   const [isLogin, setIsLogin] = useState(true);
@@ -31,30 +33,29 @@ function LoginPage() {
     event.preventDefault();
     try {
       if (isLogin) {
-        const res = await Auth.login({
+        await Auth.login({
           email: formData.email,
           password: formData.password,
         });
-        console.log("Login successful:", res);
-        navigate("/");
         return;
       }
 
-      const res = await Auth.signup({
+      await Auth.signup({
         email: formData.email,
         password: formData.password,
         username: formData.username,
       });
-      console.log("Signup successful:", res);
-        navigate("/");
     } catch (error) {
       console.error("Login error:", error);
       setMessage("Login failed. Please try again.");
+    } finally {
+      dispatch(checkUserAuth());
     }
   };
 
-  return (
-    user._id ? "" :
+  return user._id ? (
+    ""
+  ) : (
     <div className="min-h-screen bg-[#090909] text-white flex items-center justify-center px-4 py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_18%)]" />
       <div className="relative z-10 w-full max-w-[90%] overflow-hidden rounded-[32px] border border-white/10 bg-[#101010] shadow-2xl shadow-slate-950/40">

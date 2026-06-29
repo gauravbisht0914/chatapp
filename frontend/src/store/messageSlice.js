@@ -32,7 +32,7 @@ export const messageSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchMessages.fulfilled, (state, action) => {
-      state.push(...action.payload);
+      state.unshift(...action.payload.reverse());
     });
   },
 });
