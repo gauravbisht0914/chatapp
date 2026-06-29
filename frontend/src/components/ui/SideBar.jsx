@@ -38,13 +38,12 @@ function SideBar({ className }) {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/5 group-hover:p-4 mt-5">
+          <div className="rounded-[28px] group-hover:inline flex justify-center group-hover:border border-white/10 bg-white/5 group-hover:p-4 mt-5">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-3xl bg-white/10 flex items-center justify-center text-white">
                 <ion-icon name="person-circle-outline" class="text-2xl" />
               </div>
               <div className="group-hover:inline hidden">
-              
                 <p className="text-sm text-slate-400">Good afternoon</p>
                 <p className="font-semibold text-white">
                   {user ? user.username : "User"}
