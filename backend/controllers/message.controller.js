@@ -49,10 +49,45 @@ async function getUserRecentChats(req, res) {
           pipeline: [{ $sort: { createdAt: -1 } }, { $limit: 1 }],
         },
       },
+
       {
         $set: {
           latestMessage: { $arrayElemAt: ["$latestMessage", 0] },
+          otherUserId: {
+            $first: {
+              $filter: {
+                input: "$recipients",
+                as: "r",
+                cond: { $ne: ["$$r", new mongoose.Types.ObjectId(_id)] },
+              },
+            },
+          },
         },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "otherUserId",
+          foreignField: "_id",
+          as: "otherUser",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                username: 1,
+                "profileImage.url": 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $set: {
+          otherUser: { $arrayElemAt: ["$otherUser", 0] },
+        },
+      },
+      {
+        $unset: "otherUserId",
       },
       {
         $sort: { "latestMessage.createdAt": -1, _id: 1 },

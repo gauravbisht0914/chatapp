@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { socket } from "../utils/socket.js";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { fetchMessages } from "@/store/messageSlice.js";
+import { clearMessages, fetchMessages } from "@/store/messageSlice.js";
 import { useDispatch } from "react-redux";
 import User from "../backend/User.js";
 import messageHandler from "../utils/sockets/messageHandler.js";
+import { RecentUserRooms } from "@/components/index.js";
 
 function ChatBubble({ message, isMe }) {
-  console.log(message, isMe);
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
@@ -70,6 +70,8 @@ useLayoutEffect(() => {
 
 
   useEffect(() => {
+    dispatch(clearMessages());
+
     async function fetchUserDetails() {
       try {
         const user2 = await User.getUserDetails(chatId);
@@ -82,9 +84,6 @@ useLayoutEffect(() => {
 
     fetchUserDetails();
 
-    console.log("Joining room", chatId);
-    console.log("User ID:", user);
-
     if (user._id) {
       socket.emit("joinRoom", [user._id, chatId], (response) => {
         console.log(response);
@@ -96,7 +95,8 @@ useLayoutEffect(() => {
         }
       });
     }
-  }, [user._id]);
+  
+  }, [user._id, chatId]);
 
   function sendMessage() {
     if (!input.trim()) return;
@@ -211,96 +211,102 @@ useLayoutEffect(() => {
   }, [localStream]);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-[32px] bg-[#090909] p-4 md:p-6">
-      <div className="mb-5 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <img
-              src={activeUser.profileImage?.url}
-              alt={activeUser.username}
-              className="h-14 w-14 rounded-4xl object-cover ring-2 ring-white/20"
-            />
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                Live chat
-              </p>
-              <h2 className="text-2xl font-semibold text-white">
-                {activeUser.username}
-              </h2>
-              <p className="text-sm text-slate-400">
-                Status: <span className="text-white">{activeUser.status}</span>
-              </p>
+    <div className="flex h-full overflow-y-auto rounded-[32px] border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
+      <RecentUserRooms className={"w-[400px]"}>
+        s
+      </RecentUserRooms>
+      <div className="flex w-full h-full flex-col overflow-hidden rounded-[32px] bg-[#090909] p-4 md:p-6">
+        <div className="mb-5 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <img
+                src={activeUser.profileImage?.url}
+                alt={activeUser.username}
+                className="h-14 w-14 rounded-4xl object-cover ring-2 ring-white/20"
+              />
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+                  Live chat
+                </p>
+                <h2 className="text-2xl font-semibold text-white">
+                  {activeUser.username}
+                </h2>
+                <p className="text-sm text-slate-400">
+                  Status:{" "}
+                  <span className="text-white">{activeUser.status}</span>
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => startCall(false)}
+                className="inline-flex items-center gap-2 rounded-3xl bg-white text-black px-4 py-3 text-sm font-semibold transition hover:bg-slate-100"
+              >
+                📞 Call
+              </button>
+              <button
+                onClick={() => startCall(true)}
+                className="inline-flex items-center gap-2 rounded-3xl bg-white text-black px-4 py-3 text-sm font-semibold transition hover:bg-slate-100"
+              >
+                🎥 Video
+              </button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => startCall(false)}
-              className="inline-flex items-center gap-2 rounded-3xl bg-white text-black px-4 py-3 text-sm font-semibold transition hover:bg-slate-100"
-            >
-              📞 Call
-            </button>
-            <button
-              onClick={() => startCall(true)}
-              className="inline-flex items-center gap-2 rounded-3xl bg-white text-black px-4 py-3 text-sm font-semibold transition hover:bg-slate-100"
-            >
-              🎥 Video
-            </button>
-          </div>
         </div>
-      </div>
 
-      <div
-        ref={messagesRef}
-        onScroll={handleScroll}
-        className="flex-1 min-h-0 overflow-y-auto rounded-[32px] border border-white/10 bg-[#0b0b0b] p-4 shadow-inner shadow-white/10"
-      >
-        {loadingOlderChats ? (
-          <div className="flex  justify-center">
-            <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
-          </div>
-        ) : null}
-        {storeMessages.map((message) => (
-          <ChatBubble
-            key={message._id}
-            message={message}
-            isMe={message.senderId === user._id}
-          />
-        ))}
-      </div>
-
-      <div className="mt-5 flex-shrink-0 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            sendMessage();
-          }}
-          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        <div
+          ref={messagesRef}
+          onScroll={handleScroll}
+          className="flex-1 min-h-0 overflow-y-auto rounded-[32px] border border-white/10 bg-[#0b0b0b] p-4 shadow-inner shadow-white/10"
         >
-          <label className="flex-1">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKey}
-              placeholder="Type a message…"
-              className="min-h-[4.5rem] w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
+          {loadingOlderChats ? (
+            <div className="flex  justify-center">
+              <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
+            </div>
+          ) : null}
+          {storeMessages.map((message) => (
+            <ChatBubble
+              key={message._id}
+              message={message}
+              isMe={message.senderId === user._id}
             />
-          </label>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setInput("😀 " + input)}
-              className="rounded-3xl bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
-            >
-              😀
-            </button>
-            <button
-              type="submit"
-              className="rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
-            >
-              Send
-            </button>
-          </div>
-        </form>
+          ))}
+        </div>
+
+        <div className="mt-5 flex-shrink-0 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendMessage();
+            }}
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          >
+            <label className="flex-1">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Type a message…"
+                className="min-h-[4.5rem] w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
+              />
+            </label>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setInput("😀 " + input)}
+                className="rounded-3xl bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
+              >
+                😀
+              </button>
+              <button
+                type="submit"
+                className="rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
+              >
+                Send
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {showCallToast && (

@@ -9,18 +9,19 @@ import { fetchRecentMessageRooms } from "./store/messageRoomSlice";
 
 function App() {
   const user = useSelector((state) => state.user.isUserAuthenticated);
-  const m = useSelector((state) => state.messageRoom);
-  console.log(user);
-  console.log(m)
-  let dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const hasInitialized = React.useRef(false);
 
   React.useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     const verifyAuth = async () => {
       try {
         await dispatch(checkUserAuth());
         await dispatch(fetchRecentMessageRooms());
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
 
@@ -32,7 +33,7 @@ function App() {
       <div className="h-full ">
         <div className="flex h-full overflow-hidden shrink-0">
           <div className="group">
-            <div className="group-hover:fixed left-0 top-0 h-screen min-w-20 hover:w-64 duration-300 overflow-hidden  bg-black z-50">
+            <div className="group-hover:fixed group-hover:left-0 group-hover:top-0 h-screen min-w-20 hover:w-64 duration-300 overflow-hidden  bg-black z-50">
               <SideBar className="h-full" />
             </div>
           </div>
