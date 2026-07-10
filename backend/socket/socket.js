@@ -1,5 +1,7 @@
 import { roomHandler } from "./handlers/roomHandler.js";
 import messageHandler from "./handlers/messageHandler.js";
+import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 
 export function socketConnection(io) {
   io.on("connection", (socket) => {
@@ -12,4 +14,5 @@ export function socketConnection(io) {
     roomHandler(socket);
     messageHandler(socket);
   });
+
 }

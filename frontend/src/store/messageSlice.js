@@ -11,7 +11,8 @@ const initialState = [
   //     createdAt: "",
   //     updatedAt: "",
   //   },
-];
+]
+
 
 export const fetchMessages = createAsyncThunk(
   "message/fetchMessagesStatus",
@@ -34,9 +35,15 @@ export const messageSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchMessages.fulfilled, (state, action) => {
-      state.unshift(...action.payload.reverse());
-    });
+   builder.addCase(fetchMessages.fulfilled, (state, action) => {
+     const map = new Map();
+
+     [...action.payload.reverse(), ...state].forEach((message) => {
+       map.set(message._id, message);
+     });
+
+     return [...map.values()];
+   });
   },
 });
 

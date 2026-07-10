@@ -59,7 +59,7 @@ function RecentUserRooms({ className }) {
 
             return (
               <NavLink
-                to={`/chat/${room?.otherUser?._id}`}
+                to={`/chat/${room?._id}`}
                 key={room?._id || `${displayName}-${room?.createdAt}`}
                 className={({ isActive }) =>
                   `group flex cursor-pointer items-center gap-3 rounded-[24px] border p-3 transition ${

@@ -9,6 +9,8 @@ import { Server } from "socket.io";
 import userRouter from "./routes/user.routes.js";
 import messagesRouter from "./routes/messages.routes.js";
 import dns from "dns";
+import User from "./models/user.model.js";
+import jwt from "jsonwebtoken";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 configDotenv();
@@ -24,6 +26,24 @@ export const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
+});
+
+io.use(async (socket, next) => {
+  const token = socket.handshake.headers.cookie
+    ? socket.handshake.headers.cookie.split("=")[1]
+    : null;
+    console.log(token)
+  if (token) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id).select("_id username");
+
+    socket.user = {
+      id: user._id.toString(),
+      username: user.username,
+    };
+  }
+  next();
 });
 
 socketConnection(io);

@@ -22,7 +22,7 @@ const router = createBrowserRouter(
     <Route>
       <Route path="*" element={<NotFound />} />
       <Route path="/" element={<App />}>
-        <Route path="/chat/:id" element={<ChatBox />} />
+        <Route path="/chat?/:id" element={<ChatBox />} />
         <Route path="/search" element={<Search />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/notifications" element={<Notifications />} />
