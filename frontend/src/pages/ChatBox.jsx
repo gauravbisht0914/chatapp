@@ -11,7 +11,7 @@ function ChatBubble({ message, isMe }) {
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[75%] rounded-[28px] px-5 py-3 my-2 shadow-lg transition ${
+        className={`max-w-[75%] rounded-[28px] px-5 py-3 my-1 shadow-lg transition ${
           isMe
             ? "bg-white text-black rounded-br-none"
             : "bg-[#141414] text-slate-100 rounded-bl-none border border-white/10"
@@ -203,10 +203,10 @@ export default function ChatBox() {
 
   return (
     <div className="flex h-full overflow-y-auto rounded-[32px] border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
-      <RecentUserRooms className={"w-[400px]"}>s</RecentUserRooms>
+      <RecentUserRooms className={"w-[400px]"}></RecentUserRooms>
       {roomId && activeUser ? (
-        <div className="flex w-full h-full flex-col overflow-hidden rounded-[32px] bg-[#090909] p-4 md:p-6">
-          <div className="mb-5 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
+        <div className="flex w-full h-full flex-col overflow-hidden rounded-[32px] bg-[#090909]">
+          <div className="border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <img
@@ -247,7 +247,7 @@ export default function ChatBox() {
           <div
             ref={messagesRef}
             onScroll={handleScroll}
-            className="flex-1 min-h-0 overflow-y-auto rounded-[32px] border border-white/10 bg-[#0b0b0b] p-4 shadow-inner shadow-white/10"
+            className="flex-1 min-h-0 overflow-y-auto border border-white/10 bg-[#0b0b0b] p-2 shadow-inner shadow-white/10"
           >
             {loadingOlderChats ? (
               <div className="flex  justify-center">
@@ -263,7 +263,7 @@ export default function ChatBox() {
             ))}
           </div>
 
-          <div className="mt-5 flex-shrink-0 rounded-[28px] border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
+          <div className="flex-shrink-0  border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
