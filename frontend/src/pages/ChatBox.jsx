@@ -7,24 +7,31 @@ import { useDispatch } from "react-redux";
 import messageHandler from "../utils/sockets/messageHandler.js";
 import { RecentUserRooms } from "@/components/index.js";
 
-function ChatBubble({ message, isMe }) {
+function ChatBubble({ message, isMe, otherUserImage }) {
   return (
-    <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+    <div className={`flex gap-2 ${isMe ? "justify-end" : "justify-start"}`}>
+      {!isMe && otherUserImage && (
+        <img
+          src={otherUserImage}
+          alt="user"
+          className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+        />
+      )}
       <div
-        className={`max-w-[75%] rounded-[28px] px-5 py-3 my-1 shadow-lg transition ${
+        className={`max-w-[75%] rounded-xl px-3 py-2 my-[1px] shadow-lg transition ${
           isMe
-            ? "bg-white text-black rounded-br-none"
-            : "bg-[#141414] text-slate-100 rounded-bl-none border border-white/10"
+            ? "bg-white text-black"
+            : "bg-[#141414] text-slate-100 border-white/10"
         }`}
       >
         <div className="text-sm leading-6">{message.text}</div>
-        <div className="mt-2 text-right text-[11px] text-slate-400">
+        {/* <div className="mt-2 text-right text-[11px] text-slate-400">
           {new Date(message.createdAt).toLocaleTimeString("en-IN", {
             hour: "2-digit",
             minute: "2-digit",
             hour12: true,
           })}
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -80,7 +87,7 @@ export default function ChatBox() {
               fetchMessages({
                 roomId: response.roomData._id,
                 offset: 0,
-                limit: 10,
+                limit: 20,
               }),
             );
           }
@@ -259,6 +266,7 @@ export default function ChatBox() {
                 key={message._id}
                 message={message}
                 isMe={message.senderId === user._id}
+                otherUserImage={activeUser.profileImage?.url}
               />
             ))}
           </div>
