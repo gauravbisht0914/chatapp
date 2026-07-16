@@ -4,8 +4,9 @@ import mongoose from "mongoose";
 async function roomHandler(socket) {
   socket.on("joinRoom", async ({ recipients, roomIdByClient }, cb) => {
     try {
+      console.log("joinRoom event received:", { recipients, roomIdByClient });
       let room = null;
-      console.log(socket)
+      console.log(socket);
 
       if (
         roomIdByClient &&
@@ -25,19 +26,29 @@ async function roomHandler(socket) {
       }
 
       if (!room) {
-        if (!Array.isArray(recipients) || recipients.length > 2) {
+        if (!Array.isArray(recipients) || recipients.length !== 2) {
           return cb({
             success: false,
             error: "Recipients must be an array of 2 recipient user IDs",
           });
         }
 
+        if (recipients[0].toString() === recipients[1].toString()) {
+          return cb({
+            success: false,
+            error: "Cannot create a chat with the same user as both recipients",
+        });
+        }
+
         room = await roomId.findOne({
-          recipients: { $all: recipients },
-          $expr: {
-            $eq: [{ $size: "$recipients" }, recipients.length],
+          recipients: {
+            $all: recipients,
+            $size: 2,
           },
         });
+
+        console.log('HEHE')
+        console.log(room)
 
         if (!room) {
           room = await roomId.create({

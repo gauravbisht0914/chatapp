@@ -6,12 +6,6 @@ async function messageHandler(socket) {
       "sendMessage",
       async ({ roomId, senderId, content, recipientId }, cb) => {
         let newMessage;
-        console.log("Received message:", {
-          roomId,
-          senderId,
-          content,
-          recipientId,
-        });
 
         if (roomId && senderId && content) {
           newMessage = await Message.create({
@@ -37,9 +31,6 @@ async function messageHandler(socket) {
           success: false,
           message: "RoomId, senderId and content are required",
         });
-
-        console.log(recipientId, roomId, newMessage);
-
 
         socket.to(roomId).emit(`${recipientId}`, newMessage);
       },

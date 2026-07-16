@@ -14,13 +14,28 @@ export const fetchRecentMessageRooms = createAsyncThunk(
 export const messageRoomsSlice = createSlice({
   name: "messageRooms",
   initialState: [],
-  reducers: {},
+  reducers: {
+    clearMessageRooms: () => {
+      return [];
+    },
+    updateMessageRoom: (state, action) => {
+      const { newLatestMessageData } = action.payload;
+      const index = state.findIndex(
+        (room) => room._id === newLatestMessageData.roomId,
+      );
+      if (index === -1) return;
+
+      const [room] = state.splice(index, 1);
+      room.latestMessage = newLatestMessageData;
+      state.unshift(room);
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchRecentMessageRooms.fulfilled, (state, action) => {
-      return action.payload
+      return action.payload;
     });
   },
 });
 
-export const {} = messageRoomsSlice.actions
-export default messageRoomsSlice.reducer
+export const { clearMessageRooms,updateMessageRoom } = messageRoomsSlice.actions;
+export default messageRoomsSlice.reducer;

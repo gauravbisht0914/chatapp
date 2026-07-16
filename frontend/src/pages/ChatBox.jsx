@@ -59,6 +59,7 @@ export default function ChatBox() {
 
 
   const hasScrolledToBottom = useRef(false);
+  const lastMessageRef= useRef(null);
 
   useLayoutEffect(() => {
     if (!messagesRef.current || storeMessages.length === 0) return;
@@ -67,22 +68,32 @@ export default function ChatBox() {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
 
+    if(lastMessageRef.current && lastMessageRef.current._id !== storeMessages[storeMessages.length - 1]._id) {
+       if (messagesRef.current) {
+         messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+       }
+    }
+    
+    lastMessageRef.current = storeMessages[storeMessages.length - 1];
     hasScrolledToBottom.current = true;
   }, [storeMessages]);  // this code will put the scroll to bottom when the component is mounted and when the storeMessages changes.
 
   useEffect(() => {
     dispatch(clearMessages());
+    hasScrolledToBottom.current = false; // reset scroll flag when component remounts or roomId changes
+    console.log("roomId", roomId);
+    console.log("user._id", user);
 
-    if (user._id) {
+    if (user._id && roomId) {
       socket.emit(
         "joinRoom",
         { roomIdByClient: roomId, recipients: [] },
         (response) => {
           console.log(response);
-          setActiveUser(
-            response.roomData.recipients.filter((r) => r._id !== user._id)[0],
-          );
-          if (response.roomData._id) {
+          if (response.roomData?._id) {
+            setActiveUser(
+              response.roomData.recipients.filter((r) => r._id !== user._id)[0],
+            );
             dispatch(
               fetchMessages({
                 roomId: response.roomData._id,
@@ -108,16 +119,13 @@ export default function ChatBox() {
       }),
     };
     setInput("");
-    messageHandler({
+   messageHandler({
       roomId,
       senderId: user._id,
       content: next.text,
       recipientId: activeUser._id,
     });
 
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    }
   }
 
   function handleKey(e) {

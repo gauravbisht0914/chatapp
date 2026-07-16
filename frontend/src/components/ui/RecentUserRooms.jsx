@@ -18,6 +18,7 @@ function RecentUserRooms({ className }) {
       hour12: true,
     });
   };
+  console.log(recentUserRooms);
 
   return (
     <aside
@@ -42,7 +43,6 @@ function RecentUserRooms({ className }) {
           </div>
         ) : (
           recentUserRooms.map((room) => {
-            console.log(room);
 
             const displayName = room.otherUser?.username || "Unknown user";
 
@@ -85,7 +85,7 @@ function RecentUserRooms({ className }) {
                       {displayName}
                     </p>
                     <span className="text-[11px] text-slate-500">
-                      {formatTime(room?.updatedAt || room?.createdAt)}
+                      {formatTime(room?.latestMessage?.createdAt)}
                     </span>
                   </div>
                   <p className="truncate text-sm text-slate-400">{preview}</p>

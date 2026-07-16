@@ -11,6 +11,7 @@ import {
   verifyEmail,
   isAuthenticated,
   getUserDetails,
+  findUserProfile,
 } from "../controllers/user.controller.js";
 import auth from "../middlewares/auth.js";
 
@@ -22,6 +23,7 @@ userRouter.post("/logout", auth, logoutUser);
 userRouter.post("/verify-email", verifyEmail);
 userRouter.get("/is-authenticated", auth, isAuthenticated);
 userRouter.get("/getUserDetails/:userId", getUserDetails);
+userRouter.get("/findUserProfile/users", findUserProfile);
 
 userRouter.post("/update-profile-picture", updateProfilePicture);
 userRouter.get("/check-username", checkUsernameAvailability);

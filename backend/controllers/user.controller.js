@@ -189,4 +189,22 @@ async function getUserDetails(req,res){
   }
 }
 
-export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated, getUserDetails  };
+async function findUserProfile(req, res) {
+  try {
+    const { username } = req.query;
+
+    if (!username) {
+      return res.status(400).json({ message: "Username parameter is required" });
+    }
+
+    const users = await User.find({
+      username:{$regex: `^${username}`, $options: "i"}
+    }).select("_id username profileImage createdAt updatedAt isVerified ");
+
+    return res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+}
+
+export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated, getUserDetails, findUserProfile };
