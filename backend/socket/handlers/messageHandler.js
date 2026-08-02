@@ -32,7 +32,7 @@ async function messageHandler(socket) {
           message: "RoomId, senderId and content are required",
         });
 
-        socket.to(roomId).emit(`${recipientId}`, newMessage);
+        socket.to(`${recipientId}`).emit("chat_event", newMessage);
       },
     );
   } catch (err) {

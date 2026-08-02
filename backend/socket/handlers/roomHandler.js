@@ -4,9 +4,7 @@ import mongoose from "mongoose";
 async function roomHandler(socket) {
   socket.on("joinRoom", async ({ recipients, roomIdByClient }, cb) => {
     try {
-      console.log("joinRoom event received:", { recipients, roomIdByClient });
       let room = null;
-      console.log(socket);
 
       if (
         roomIdByClient &&
@@ -15,7 +13,7 @@ async function roomHandler(socket) {
       ) {
         const isRoomFound = await roomId.findById(roomIdByClient);
         if (isRoomFound) {
-          if (!isRoomFound.recipients.includes(socket.user.id)) {
+          if (!isRoomFound.recipients.includes(socket.user._id)) {
             return cb({
               error: "User is not a participant in the room",
               success: false,
@@ -46,9 +44,6 @@ async function roomHandler(socket) {
             $size: 2,
           },
         });
-
-        console.log('HEHE')
-        console.log(room)
 
         if (!room) {
           room = await roomId.create({

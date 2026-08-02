@@ -39,7 +39,7 @@ io.use(async (socket, next) => {
     const user = await User.findById(decoded.id).select("_id username");
 
     socket.user = {
-      id: user._id.toString(),
+      _id: user._id.toString(),
       username: user.username,
     };
   }

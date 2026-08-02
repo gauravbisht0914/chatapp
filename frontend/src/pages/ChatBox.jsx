@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { clearMessages, fetchMessages } from "@/store/messageSlice.js";
 import { useDispatch } from "react-redux";
 import messageHandler from "../utils/sockets/messageHandler.js";
-import { RecentUserRooms } from "@/components/index.js";
+import { RecentUserRooms, VideoCallDialogBox } from "@/components/index.js";
 
 function ChatBubble({ message, isMe, otherUserImage }) {
   return (
@@ -42,24 +42,17 @@ export default function ChatBox() {
   console.log(roomId);
   const user = useSelector((state) => state.user);
   const storeMessages = useSelector((state) => state.message);
-  const [showVideo, setShowVideo] = useState(false);
-  const [showCallToast, setShowCallToast] = useState(false);
-  const [localStream, setLocalStream] = useState(null);
   const [loadingOlderChats, setLoadingOlderChats] = useState(false);
 
   const messagesRef = useRef(null);
-  const localVideoRef = useRef(null);
 
-  console.log(storeMessages);
   const dispatch = useDispatch();
 
   const [input, setInput] = useState("");
   const [activeUser, setActiveUser] = useState({});
-  console.log(activeUser);
-
 
   const hasScrolledToBottom = useRef(false);
-  const lastMessageRef= useRef(null);
+  const lastMessageRef = useRef(null);
 
   useLayoutEffect(() => {
     if (!messagesRef.current || storeMessages.length === 0) return;
@@ -68,15 +61,18 @@ export default function ChatBox() {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
 
-    if(lastMessageRef.current && lastMessageRef.current._id !== storeMessages[storeMessages.length - 1]._id) {
-       if (messagesRef.current) {
-         messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-       }
+    if (
+      lastMessageRef.current &&
+      lastMessageRef.current._id !== storeMessages[storeMessages.length - 1]._id
+    ) {
+      if (messagesRef.current) {
+        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      }
     }
-    
+
     lastMessageRef.current = storeMessages[storeMessages.length - 1];
     hasScrolledToBottom.current = true;
-  }, [storeMessages]);  // this code will put the scroll to bottom when the component is mounted and when the storeMessages changes.
+  }, [storeMessages]); // this code will put the scroll to bottom when the component is mounted and when the storeMessages changes.
 
   useEffect(() => {
     dispatch(clearMessages());
@@ -119,13 +115,12 @@ export default function ChatBox() {
       }),
     };
     setInput("");
-   messageHandler({
+    messageHandler({
       roomId,
       senderId: user._id,
       content: next.text,
       recipientId: activeUser._id,
     });
-
   }
 
   function handleKey(e) {
@@ -139,7 +134,6 @@ export default function ChatBox() {
 
   const handleScroll = async (e) => {
     if (e.currentTarget.scrollTop <= 50 && loadingOlderChats === false) {
-
       setLoadingOlderChats(true);
       previousHeightRef.current = messagesRef.current.scrollHeight;
 
@@ -155,7 +149,7 @@ export default function ChatBox() {
         setLoadingOlderChats(false);
       }
     }
-  };  // this code will load older messages when the user scrolls to the top of the chat box.
+  }; // this code will load older messages when the user scrolls to the top of the chat box.
 
   useLayoutEffect(() => {
     if (previousHeightRef.current && messagesRef.current) {
@@ -168,53 +162,13 @@ export default function ChatBox() {
 
       previousHeightRef.current = 0;
     }
-  }, [storeMessages]);  // this code will maintain the scroll position when older messages are loaded.
+  }, [storeMessages]); // this code will maintain the scroll position when older messages are loaded.
 
-  function startCall(isVideo) {
-    setShowCallToast(true);
-    setTimeout(() => setShowCallToast(false), 2200);
-    if (isVideo) setShowVideo(true);
+
+  const [startVideoCall, setStartVideoCall] = useState(false);
+  function startCall() {
+    setStartVideoCall(prev=>!prev);
   }
-
-  useEffect(() => {
-    let mounted = true;
-    async function startLocalMedia() {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        if (!mounted) return;
-        setLocalStream(s);
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = s;
-        }
-      } catch (err) {
-        console.error("getUserMedia error", err);
-        setShowVideo(false);
-        alert("Unable to access camera/microphone. Please allow permissions.");
-      }
-    }
-
-    if (showVideo) {
-      startLocalMedia();
-    } else if (localStream) {
-      localStream.getTracks().forEach((t) => t.stop());
-      setLocalStream(null);
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [showVideo]);
-
-  useEffect(() => {
-    return () => {
-      if (localStream) {
-        localStream.getTracks().forEach((t) => t.stop());
-      }
-    };
-  }, [localStream]);
 
   return (
     <div className="flex h-full overflow-y-auto rounded-[32px] border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
@@ -320,58 +274,15 @@ export default function ChatBox() {
         </div>
       )}
 
-      {showCallToast && (
-        <div className="fixed bottom-6 right-6 rounded-3xl bg-[#0d0d0d] px-4 py-3 text-sm text-slate-200 shadow-2xl shadow-white/10">
-          Calling {activeUser.username}…
-        </div>
+      {startVideoCall && (
+        <VideoCallDialogBox
+          incomingCallOffer={null}
+          callerData={user}
+          calleeData={activeUser}
+          roomId={roomId}
+        />
       )}
 
-      {showVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6">
-          <div className="w-full max-w-4xl rounded-[32px] border border-white/10 bg-[#0f0f0f] p-6 shadow-2xl shadow-[#ffffff1a]">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={activeUser.profileImage}
-                  alt={activeUser.username}
-                  className="h-12 w-12 rounded-3xl object-cover ring-2 ring-white/10"
-                />
-                <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                    Video call
-                  </p>
-                  <h3 className="text-xl font-semibold text-white">
-                    {activeUser.username}
-                  </h3>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowVideo(false)}
-                className="rounded-3xl bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-400"
-              >
-                End call
-              </button>
-            </div>
-
-            <div className="mt-5 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-              <div className="min-h-[18rem] rounded-[28px] bg-slate-900/80 p-4 shadow-inner shadow-slate-950/20">
-                <div className="flex h-full items-center justify-center rounded-[28px] border border-slate-800 bg-slate-950/60 text-center text-slate-400">
-                  Remote video feed
-                </div>
-              </div>
-              <div className="min-h-[18rem] rounded-[28px] overflow-hidden border border-slate-800 bg-slate-900/90">
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

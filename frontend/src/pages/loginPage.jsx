@@ -3,6 +3,7 @@ import Auth from "../backend/Auth.js";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { checkUserAuth } from "@/store/userSlice.js";
+import { fetchRecentMessageRooms } from "@/store/messageRoomSlice.js";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -10,9 +11,8 @@ function LoginPage() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log(user._id);
     if (user._id) {
-      navigate("/");
+      navigate("/chat");
     }
   }, [user]);
 
@@ -50,6 +50,8 @@ function LoginPage() {
       setMessage("Login failed. Please try again.");
     } finally {
       dispatch(checkUserAuth());
+      dispatch(fetchRecentMessageRooms());
+      navigate("/chat");
     }
   };
 

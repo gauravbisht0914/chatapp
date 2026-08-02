@@ -58,10 +58,29 @@ class Auth {
       return res;
     } catch (error) {
       console.error("Authentication error:", error);
-      throw error
+      throw error;
     }
   }
 
+  async logout() {
+    try {
+      const response = await axios.post(
+        this.backendUrl + "/api/auth/logout",{},
+        {
+          withCredentials: true,
+        },
+      );
+
+      if (response.statusText !== "OK") {
+        throw new Error("Logout failed");
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
+    }
+  }
 }
 
 export default new Auth();

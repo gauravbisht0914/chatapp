@@ -13,6 +13,8 @@ const initialState = {
   createdAt: "",
   updatedAt: "",
   isUserAuthenticated: false,
+  isCallActive: false,
+  incomingCallData: null,
 };
 
 export const checkUserAuth = createAsyncThunk(
@@ -41,6 +43,7 @@ export const userSlice = createSlice({
         status,
         createdAt,
         updatedAt,
+        isCallActive,
       } = action.payload;
 
       state._id = _id;
@@ -51,6 +54,7 @@ export const userSlice = createSlice({
       state.status = status;
       state.createdAt = createdAt;
       state.updatedAt = updatedAt;
+      state.isCallActive = isCallActive;
     },
     clearUser: (state) => {
       state._id = "";
@@ -61,7 +65,13 @@ export const userSlice = createSlice({
       state.status = "offline";
       state.createdAt = "";
       state.updatedAt = "";
+      state.isCallActive = false;
     },
+    toggleCallActive: (state, action) => {
+      const { callData } = action.payload;
+      state.incomingCallData = callData;
+      state.isCallActive = !state.isCallActive;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -83,5 +93,5 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, toggleCallActive } = userSlice.actions;
 export default userSlice.reducer;

@@ -1,10 +1,18 @@
-import React from "react";
-import { useState } from "react";
+import Auth from "@/backend/Auth";
 import { useSelector } from "react-redux";
 
 const Settings = () => {
   const currentUser = useSelector((state) => state.user);
-  console.log("Current user in Settings:", currentUser);
+
+  async function logout() {
+    try {
+      await Auth.logout();
+      window.location.assign("/");
+
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-transparent px-4 py-8 sm:px-6 lg:px-8">
@@ -32,14 +40,23 @@ const Settings = () => {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.25em] text-slate-500">
-                  Signed in as
-                </p>
-                <p className="text-lg font-semibold text-white">
-                  {currentUser.username}
-                </p>
-                <p className="text-sm text-slate-400">{currentUser.email}</p>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.25em] text-slate-500">
+                    Signed in as
+                  </p>
+                  <p className="text-lg font-semibold text-white">
+                    {currentUser.username}
+                  </p>
+                  <p className="text-sm text-slate-400">{currentUser.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="inline-flex items-center cursor-pointer justify-center rounded-full border border-[#612020] bg-[#c44141]  px-4 py-2 text-sm font-medium text-white transition hover:bg-[red] focus:outline-none focus:ring-2 focus:ring-white/20"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           </div>
