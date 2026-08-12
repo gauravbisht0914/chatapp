@@ -43,10 +43,86 @@ async function updateProfilePicture(req, res) {
 
     return res.status(200).json({
       message: "Updated Profile Image",
-      url: uploadedProfileImg.url,
+      newProfileData: newProfileImgData,
     });
   } catch (error) {
     return res.status(500).send(error.message);
+  }
+}
+
+async function updateProfileName(req, res) {
+  try {
+    const { _id } = req.user;
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).send("Username required!");
+    }
+
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return res.status(404).send("User doesn't exist");
+    }
+
+    if (username === user.username) {
+      return res
+        .status(400)
+        .send("New username cannot be the same as the current username");
+    }
+    if (username.length < 3 || username.length > 20) {
+      return res
+        .status(400)
+        .send("Username must be between 3 and 20 characters");
+    }
+
+    user.username = username.trim().toLowerCase();
+    await user.save();
+
+    return res.status(200).json({
+      message: "Updated Profile Name",
+      newProfileData: user.username,
+    });
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+}
+
+async function updatePassword(req, res) {
+  try {
+    const { _id } = req.user;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).send("Current and new password are required");
+    }
+
+    if (newPassword.length < 6) {
+      return res
+        .status(400)
+        .send("New password must be at least 6 characters long");
+    }
+
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return res.status(404).send("User doesn't exist");
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(400).send("Current password is incorrect");
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password updated successfully",
+    });
+  } catch (e) {
+    return res.status(500).send(e.message);
   }
 }
 
@@ -94,4 +170,6 @@ export {
   updateProfilePicture,
   checkUsernameAvailability,
   checkEmailAvailability,
+  updateProfileName,
+  updatePassword,
 };

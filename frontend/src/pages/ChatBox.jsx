@@ -5,7 +5,11 @@ import { useSelector } from "react-redux";
 import { clearMessages, fetchMessages } from "@/store/messageSlice.js";
 import { useDispatch } from "react-redux";
 import messageHandler from "../utils/sockets/messageHandler.js";
-import { RecentUserRooms, VideoCallDialogBox } from "@/components/index.js";
+import {
+  RecentUserRooms,
+  VideoCallDialogBox,
+  Loader,
+} from "@/components/index.js";
 
 function ChatBubble({ message, isMe, otherUserImage }) {
   return (
@@ -219,9 +223,7 @@ export default function ChatBox() {
             className="flex-1 min-h-0 overflow-y-auto border border-white/10 bg-[#0b0b0b] p-2 shadow-inner shadow-white/10"
           >
             {loadingOlderChats ? (
-              <div className="flex  justify-center">
-                <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
-              </div>
+              <Loader />
             ) : null}
             {storeMessages.map((message) => (
               <ChatBubble

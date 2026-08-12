@@ -1,16 +1,75 @@
 import Auth from "@/backend/Auth";
 import { useSelector } from "react-redux";
+import User from "@/backend/User";
+import React from "react";
+import { setUser } from "@/store/userSlice.js";
+import { useDispatch } from "react-redux";
+import { Loader, Toast } from "@/components/index";
 
 const Settings = () => {
   const currentUser = useSelector((state) => state.user);
+  const [loading,setLoading] = React.useState({
+    loadingForProfileUpdate: false,
+    loadingForPasswordUpdate: false,
+  })
 
+  const [profileData, setProfileData] = React.useState({
+    username: currentUser.username,
+    email: currentUser.email,
+    currentPassword: "",
+    newPassword: "",
+  });
+
+  const dispatch = useDispatch();
   async function logout() {
     try {
       await Auth.logout();
       window.location.assign("/");
-
     } catch (error) {
       console.error("Logout error:", error);
+    }
+  }
+
+  async function updateProfilePictureHandler(event) {
+    try {
+      event.preventDefault();
+      const res = await User.updateProfilePicture(event.target.files[0]);
+      console.log("Profile picture updated:", res);
+      dispatch(setUser({ ...currentUser, profileImage: res.newProfileData }));
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+    }
+  }
+
+  async function updateProfileNameHandler(event) {
+    try {
+      event.preventDefault();
+      setLoading({ ...loading, loadingForProfileUpdate: true });
+      const res = await User.updateProfileName(profileData.username);
+      console.log("Profile name updated:", res);
+      dispatch(setUser({ ...currentUser, username: res.newProfileData }));
+    } catch (error) {
+      console.error("Error updating profile name:", error);
+    }finally {
+      setLoading({ ...loading, loadingForProfileUpdate: false });
+    }
+  }
+
+  async function updatePasswordHandler(event) {
+    try {
+      if(profileData.currentPassword.trim() === "" || profileData.newPassword.trim() === ""){
+        throw new Error("Current password and new password cannot be empty");
+      }
+      if(profileData.currentPassword === profileData.newPassword){
+        throw new Error("New password cannot be the same as the current password");
+      }
+      event.preventDefault();
+      setLoading({ ...loading, loadingForPasswordUpdate: true });
+      const res = await User.updatePassword(profileData.currentPassword, profileData.newPassword);
+    } catch (error) {
+      console.error("Error updating password:", error);
+    } finally {
+      setLoading({ ...loading, loadingForPasswordUpdate: false });
     }
   }
 
@@ -72,9 +131,7 @@ const Settings = () => {
                     Change your display name, email address, or profile picture.
                   </p>
                 </div>
-                <button className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100">
-                  Edit avatar
-                </button>
+                
               </div>
 
               <form className="space-y-5">
@@ -83,13 +140,16 @@ const Settings = () => {
                     Profile picture
                   </span>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <img
-                      src={currentUser.profileImage?.url}
-                      alt="Avatar preview"
-                      className="h-16 w-16 rounded-4xl object-cover border border-white/10"
-                    />
+                    <div className="h-14 w-16 overflow-hidden rounded-4xl">
+                      <img
+                        src={currentUser.profileImage?.url}
+                        alt="Avatar preview"
+                        className="h-full w-full object-cover border border-white/10"
+                      />
+                    </div>
                     <input
                       type="file"
+                      onChange={updateProfilePictureHandler}
                       className="block w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-black file:font-semibold"
                     />
                   </div>
@@ -101,27 +161,35 @@ const Settings = () => {
                   </span>
                   <input
                     type="text"
-                    defaultValue={currentUser.username}
+                    onChange={(e) => {
+                      setProfileData({
+                        ...profileData,
+                        username: e.target.value,
+                      });
+                    }}
+                    defaultValue={profileData.username}
                     className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                   />
                 </label>
 
-                <label className="block text-sm text-slate-300">
+                {/* <label className="block text-sm text-slate-300">
                   <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-500">
                     Email
                   </span>
                   <input
                     type="email"
-                    defaultValue={currentUser.email}
+                    onChange={e=>setProfileData({...profileData, email: e.target.value})}
+                    defaultValue={profileData.email}
                     className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                   />
-                </label>
+                </label> */}
 
                 <button
+                  onClick={updateProfileNameHandler}
                   type="button"
                   className="w-full rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                 >
-                  Save profile changes
+                  {loading.loadingForProfileUpdate ? <Loader /> : "Save profile changes"}
                 </button>
               </form>
             </section>
@@ -144,6 +212,13 @@ const Settings = () => {
                   <input
                     type="password"
                     placeholder="••••••••"
+                    value={profileData.currentPassword}
+                    onChange={(e) => {
+                      setProfileData({
+                        ...profileData,
+                        currentPassword: e.target.value,
+                      });
+                    }}
                     className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                   />
                 </label>
@@ -155,6 +230,13 @@ const Settings = () => {
                   <input
                     type="password"
                     placeholder="••••••••"
+                    value={profileData.newPassword}
+                    onChange={(e) => {
+                      setProfileData({
+                        ...profileData,
+                        newPassword: e.target.value,
+                      });
+                    }}
                     className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                   />
                 </label>
@@ -171,6 +253,7 @@ const Settings = () => {
                 </label>
 
                 <button
+                onClick={updatePasswordHandler}
                   type="button"
                   className="w-full rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                 >

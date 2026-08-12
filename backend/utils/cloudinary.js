@@ -10,6 +10,9 @@ function configCloudinary() {
 }
 
 const uploadProfileImage = async (path) => {
+  console.log(process.env.CLOUDINARY_CLOUD_NAME);
+  console.log(process.env.CLOUDINARY_API_KEY);
+  console.log(process.env.CLOUDINARY_API_SECRET);
   const options = {
     folder: "Post attachments",
     resource_type: "image",

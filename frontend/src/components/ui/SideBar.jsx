@@ -3,7 +3,7 @@ import { useSelector } from "react-redux"
 
 function SideBar({ className }) {
   const user = useSelector(state=>state.user)
-  console.log(user)
+
     const navStyle = ({ isActive }) =>
         `flex items-center gap-3 rounded-3xl px-4 py-3 text-sm font-semibold transition ${isActive
             ? 'bg-white/10 text-white shadow-lg shadow-white/5'
@@ -40,12 +40,16 @@ function SideBar({ className }) {
 
           <div className="rounded-[28px] group-hover:inline justify-center group-border border-white/10 bg-white/5  mt-5">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-3xl bg-white/10 flex items-center justify-center text-white">
-                <ion-icon name="person-circle-outline" class="text-2xl" />
+              <div className="">
+                <img
+                  src={user?.profileImage?.url}
+                  alt="Profile "
+                  className="h-12 w-12 rounded-4xl object-cover"
+                />
               </div>
               <div className="group-hover:inline hidden">
                 <p className="font-semibold text-white">
-                  {user ? user.username : 'User'}
+                  {user ? user.username : "User"}
                 </p>
               </div>
             </div>
