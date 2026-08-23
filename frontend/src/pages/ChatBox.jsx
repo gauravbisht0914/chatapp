@@ -168,10 +168,11 @@ export default function ChatBox() {
     }
   }, [storeMessages]); // this code will maintain the scroll position when older messages are loaded.
 
-
   const [startVideoCall, setStartVideoCall] = useState(false);
   function startCall() {
-    setStartVideoCall(prev=>!prev);
+    if (!startVideoCall) {
+      setStartVideoCall(true);
+    }
   }
 
   return (
@@ -222,9 +223,7 @@ export default function ChatBox() {
             onScroll={handleScroll}
             className="flex-1 min-h-0 overflow-y-auto border border-white/10 bg-[#0b0b0b] p-2 shadow-inner shadow-white/10"
           >
-            {loadingOlderChats ? (
-              <Loader />
-            ) : null}
+            {loadingOlderChats ? <Loader /> : null}
             {storeMessages.map((message) => (
               <ChatBubble
                 key={message._id}
@@ -282,9 +281,9 @@ export default function ChatBox() {
           callerData={user}
           calleeData={activeUser}
           roomId={roomId}
+          toggleVideoCallDialogBox={setStartVideoCall}
         />
       )}
-
     </div>
   );
 }

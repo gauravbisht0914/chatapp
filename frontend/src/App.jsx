@@ -38,7 +38,7 @@ function App() {
           callerData={userD.incomingCallData?.callerData}
           calleeData={userD.incomingCallData?.calleeData}
           roomId={userD.incomingCallData?.roomId}
-          onClose={() => dispatch(toggleCallActive({ callData: null }))}
+          // onClose={() => dispatch(toggleCallActive({ callData: null }))}
 
         />
       )}

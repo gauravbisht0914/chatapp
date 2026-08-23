@@ -2,16 +2,13 @@ async function callHandler(socket) {
   socket.on("call_made", async ({ offer, roomId, calleeData, callerData }) => {
     try {
       if (roomId) {
-        socket
-          .to(`${calleeData._id}`)
-          .emit("chat_event", {
-            call: true,
-            offer,
-            calleeData,
-            callerData,
-            roomId,
-          });
-        console.log("call req emited ~~~");
+        socket.to(`${calleeData._id}`).emit("chat_event", {
+          call: true,
+          offer,
+          calleeData,
+          callerData,
+          roomId,
+        });
       }
     } catch (error) {
       console.log(error);
@@ -19,9 +16,11 @@ async function callHandler(socket) {
   });
 
   socket.on("call_accepted", async ({ offerAnswer, roomId }) => {
-    console.log("call made accepted ~~~");
-    socket.to(roomId).emit("call_reponse", { answer: offerAnswer, roomId });
-    console.log("call made accepted Call back");
+    socket.to(roomId).emit("call_response", { answer: offerAnswer, roomId });
+  });
+
+  socket.on("call_ended", async ({ roomId, reason }) => {
+    socket.to(roomId).emit("call_ended", { roomId, reason });
   });
 
   socket.on("ice_candidate", ({ candidate, roomId }) => {

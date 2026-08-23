@@ -3,6 +3,9 @@ import { pushNewMessages } from "@/store/messageSlice";
 import { toggleCallActive } from "@/store/userSlice";
 import store from "@/store/store";
 import { io } from "socket.io-client";
+import callRingtone from "@/assets/ringtone.mp3";
+
+export const audio = new Audio(callRingtone);
 
 export const socket = io(`${import.meta.env.VITE_BACKEND_URL || ""}`, {
   autoConnect: false,
@@ -23,7 +26,10 @@ function socketConnection(userId) {
 
   socket.on("chat_event", (data) => {
     if (data.call) {
-      console.log("Received call data:", data);
+      console.log('INCOMING CALL TRIGGERED!')
+      audio.loop = true
+      audio.play().catch(console.error);;
+      
       store.dispatch(toggleCallActive({ callData: data }));
     }else{
       console.log("Received message:", data);
