@@ -92,6 +92,7 @@ async function updatePassword(req, res) {
   try {
     const { _id } = req.user;
     const { currentPassword, newPassword } = req.body;
+    console.log(currentPassword,newPassword)
 
     if (!currentPassword || !newPassword) {
       return res.status(400).send("Current and new password are required");

@@ -78,8 +78,9 @@ class User {
 
   async updatePassword({ currentPassword, newPassword }) {
     try {
+      console.log(currentPassword,newPassword)
       const res = await axios.post(
-        this.backendUrl + `/api/auth/change-password`,
+        this.backendUrl + `/api/auth/update-password`,
         { currentPassword, newPassword },
         {
           withCredentials: true,

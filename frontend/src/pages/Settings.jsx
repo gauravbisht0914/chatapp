@@ -57,15 +57,16 @@ const Settings = () => {
 
   async function updatePasswordHandler(event) {
     try {
+      event.preventDefault();
       if(profileData.currentPassword.trim() === "" || profileData.newPassword.trim() === ""){
         throw new Error("Current password and new password cannot be empty");
       }
       if(profileData.currentPassword === profileData.newPassword){
         throw new Error("New password cannot be the same as the current password");
       }
-      event.preventDefault();
       setLoading({ ...loading, loadingForPasswordUpdate: true });
-      const res = await User.updatePassword(profileData.currentPassword, profileData.newPassword);
+      console.log(profileData)
+      const res = await User.updatePassword({currentPassword:profileData.currentPassword,newPassword: profileData.newPassword});
     } catch (error) {
       console.error("Error updating password:", error);
     } finally {
