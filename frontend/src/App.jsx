@@ -1,7 +1,7 @@
 import "./App.css";
 import { SideBar, VideoCallDialogBox } from "./components/index.js";
 import { Outlet } from "react-router";
-import { checkUserAuth, toggleCallActive } from "./store/userSlice";
+import { checkUserAuth } from "./store/userSlice";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { LoginPage } from "./pages";
@@ -51,7 +51,7 @@ function App() {
               </div>
             </div>
             <main className="flex-1 min-h-0 overflow-hidden p-4 md:p-6 lg:p-8">
-              <div className="h-full overflow-y-auto rounded-[32px] border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
+              <div className="h-full overflow-y-auto rounded-4xl border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
                 <Outlet />
               </div>
             </main>

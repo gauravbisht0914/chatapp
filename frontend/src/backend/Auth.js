@@ -17,14 +17,13 @@ class Auth {
       );
       console.log(response);
 
-      if (response.statusText !== "OK") {
-        throw new Error("Login failed");
-      }
+      // if (response.statusText !== "OK") {
+      //   throw new Error("Login failed");
+      // }
 
       return response;
     } catch (error) {
-      console.error("Login error:", error);
-      throw error;
+      throw error.response.data || error;
     }
   }
 
@@ -65,7 +64,8 @@ class Auth {
   async logout() {
     try {
       const response = await axios.post(
-        this.backendUrl + "/api/auth/logout",{},
+        this.backendUrl + "/api/auth/logout",
+        {},
         {
           withCredentials: true,
         },
@@ -78,6 +78,32 @@ class Auth {
       return response;
     } catch (error) {
       console.error("Logout error:", error);
+      throw error;
+    }
+  }
+
+  async forgetPasswordReq({ email }) {
+    try {
+      const response = await axios.post(
+        this.backendUrl + "/api/auth/forget-password-req",
+        { email },
+      );
+      return response;
+    } catch (error) {
+      console.error("Forget password request error:", error);
+      throw error;
+    }
+  }
+
+  async forgetPassword({ email, newPassword, resetToken }) {
+    try {
+      const response = await axios.post(
+        this.backendUrl + "/api/auth/forget-password",
+        { email, newPassword, resetToken },
+      );
+      return response;
+    } catch (error) {
+      console.error("Forget password error:", error);
       throw error;
     }
   }

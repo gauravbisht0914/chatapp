@@ -1,10 +1,9 @@
 import User from "../models/user.model.js";
-import jwt from "jsonwebtoken";
 import { generateToken } from "../utils/jwt.js";
 import randomNumber from "../utils/randomNumber.js";
 import validator from "validator";
 import mongooese from "mongoose";
-
+import { sendOtpForPasswordResetRequest } from "../utils/nodeMailer.js";
 
 async function createUser(req, res) {
   try {
@@ -163,28 +162,30 @@ function isAuthenticated(req, res) {
   }
 }
 
-async function getUserDetails(req,res){
-  try{
-    const {userId} = req.params;
+async function getUserDetails(req, res) {
+  try {
+    const { userId } = req.params;
 
-    if(!mongooese.Types.ObjectId.isValid(userId)){
+    if (!mongooese.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid User ID" });
     }
-    
-    if(!userId){
+
+    if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const user = await User.findById(userId).select("_id username profileImage createdAt updatedAt isVerified ");
+    const user = await User.findById(userId).select(
+      "_id username profileImage createdAt updatedAt isVerified ",
+    );
 
-    if(!user){
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     console.log(userId, user);
 
     return res.status(200).json(user);
-  }catch(error){
+  } catch (error) {
     res.status(500).json({ message: error.message || "Server error" });
   }
 }
@@ -194,11 +195,13 @@ async function findUserProfile(req, res) {
     const { username } = req.query;
 
     if (!username) {
-      return res.status(400).json({ message: "Username parameter is required" });
+      return res
+        .status(400)
+        .json({ message: "Username parameter is required" });
     }
 
     const users = await User.find({
-      username:{$regex: `^${username}`, $options: "i"}
+      username: { $regex: `^${username}`, $options: "i" },
     }).select("_id username profileImage createdAt updatedAt isVerified ");
 
     return res.status(200).json(users);
@@ -207,4 +210,92 @@ async function findUserProfile(req, res) {
   }
 }
 
-export { createUser, loginUser, logoutUser, verifyEmail, isAuthenticated, getUserDetails, findUserProfile };
+async function forgetPasswordReq(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.passwordResetTokenExpiredAt > Date.now()) {
+      return res.status(400).json({
+        message:
+          "Please retry after some time. A password reset request has already been made.",
+      });
+    }
+
+    const resetToken = randomNumber();
+
+    user.passwordResetToken = resetToken;
+    user.passwordResetTokenExpiredAt = Date.now() + 2 * 60 * 1000;
+
+    await user.save();
+
+    await sendOtpForPasswordResetRequest(user.email, resetToken);
+    res.status(200).json({ message: "Password reset token sent" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+}
+
+async function forgetPassword(req, res) {
+  try {
+    const { email, resetToken, newPassword } = req.body;
+    console.log(email, resetToken, newPassword);
+
+    if (!email || !resetToken || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!validator.isLength(newPassword, { min: 6 })) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+
+    const user = await User.findOne({ email });
+    console.log(user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.passwordResetToken !== resetToken) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    if (user.passwordResetTokenExpiredAt < Date.now()) {
+      return res.status(400).json({ message: "Token expired" });
+    }
+
+    const jwtToken = generateToken(user);
+
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpiredAt = undefined;
+
+    await user.save();
+    res.status(201).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+}
+
+export {
+  createUser,
+  loginUser,
+  logoutUser,
+  verifyEmail,
+  isAuthenticated,
+  getUserDetails,
+  findUserProfile,
+  forgetPasswordReq,
+  forgetPassword,
+};

@@ -1,5 +1,6 @@
 import roomId from "../../models/roomId.model.js";
 import mongoose from "mongoose";
+import presenceHandler from "./presenceHandler.js";
 
 async function roomHandler(socket) {
   socket.on("joinRoom", async ({ recipients, roomIdByClient }, cb) => {
@@ -35,7 +36,7 @@ async function roomHandler(socket) {
           return cb({
             success: false,
             error: "Cannot create a chat with the same user as both recipients",
-        });
+          });
         }
 
         room = await roomId.findOne({
@@ -56,11 +57,21 @@ async function roomHandler(socket) {
 
       const roomData = await roomId
         .findById(room._id)
-        .populate("recipients", "username profileImage _id");
+        .populate("recipients", "username profileImage _id lastActive");
+
+      let userPresence = presenceHandler.updateAndGetpresenceSubscription(
+        socket.user._id,
+        [
+          roomData.recipients.filter(
+            (userData) => String(userData._id) !== String(socket.user._id),
+          )[0]._id,
+        ],
+      );
 
       cb({
         message: `Room joined successfully ${roomIdByClient}`,
         roomData: roomData,
+        isUserActive: userPresence[0].active,
       });
     } catch (err) {
       console.log(err.message);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { socket } from "../utils/socket.js";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -18,11 +18,11 @@ function ChatBubble({ message, isMe, otherUserImage }) {
         <img
           src={otherUserImage}
           alt="user"
-          className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+          className="h-8 w-8 rounded-full object-cover shrink-0"
         />
       )}
       <div
-        className={`max-w-[75%] rounded-xl px-3 py-2 my-[1px] shadow-lg transition ${
+        className={`max-w-[75%] rounded-xl px-3 py-2 my-px shadow-lg transition ${
           isMe
             ? "bg-white text-black"
             : "bg-[#141414] text-slate-100 border-white/10"
@@ -91,9 +91,12 @@ export default function ChatBox() {
         (response) => {
           console.log(response);
           if (response.roomData?._id) {
-            setActiveUser(
-              response.roomData.recipients.filter((r) => r._id !== user._id)[0],
-            );
+            setActiveUser({
+              ...response.roomData.recipients.filter(
+                (r) => r._id !== user._id,
+              )[0],
+              isUserActive: response.isUserActive,
+            });
             dispatch(
               fetchMessages({
                 roomId: response.roomData._id,
@@ -105,6 +108,15 @@ export default function ChatBox() {
         },
       );
     }
+
+    socket.on("user_presence_update", (userDetails) => {  
+      setActiveUser((prev) => {
+        if (prev._id === userDetails.userId) {
+          return { ...prev, isUserActive: userDetails.active };
+        }
+        return prev;
+      });
+    });
   }, [roomId, user._id]);
 
   function sendMessage() {
@@ -174,12 +186,13 @@ export default function ChatBox() {
       setStartVideoCall(true);
     }
   }
+  console.log(activeUser);
 
   return (
-    <div className="flex h-full overflow-y-auto rounded-[32px] border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
+    <div className="flex h-full overflow-y-auto rounded-4xl border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
       <RecentUserRooms className={"w-[400px]"}></RecentUserRooms>
       {roomId && activeUser ? (
-        <div className="flex w-full h-full flex-col overflow-hidden rounded-[32px] bg-[#090909]">
+        <div className="flex w-full h-full flex-col overflow-hidden rounded-4xl bg-[#090909]">
           <div className="border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
@@ -189,15 +202,22 @@ export default function ChatBox() {
                   className="h-14 w-14 rounded-4xl object-cover ring-2 ring-white/20"
                 />
                 <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                    Live chat
-                  </p>
                   <h2 className="text-2xl font-semibold text-white">
                     {activeUser.username}
                   </h2>
-                  <p className="text-sm text-slate-400">
+                  <p className={`text-sm text-slate-400 `}>
                     Status:{" "}
-                    <span className="text-white">{activeUser.status}</span>
+                    <span
+                      className={
+                        activeUser.isUserActive
+                          ? "text-green-400"
+                          : "text-slate-300"
+                      }
+                    >
+                      {" "}
+                      {activeUser.isUserActive ? "ACTIVE" : "INACTIVE"}{" "}
+                    </span>
+                    {/* <span className="text-white">{activeUser.status}</span> */}
                   </p>
                 </div>
               </div>

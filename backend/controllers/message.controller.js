@@ -75,6 +75,7 @@ async function getUserRecentChats(req, res) {
                 _id: 1,
                 username: 1,
                 "profileImage.url": 1,
+                lastActive: 1,
               },
             },
           ],

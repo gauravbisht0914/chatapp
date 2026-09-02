@@ -12,6 +12,7 @@ import {
   Search,
   Settings,
   Notifications,
+  ForgotPasswordPage,
 } from "./pages/index.js";
 import App from "./App.jsx";
 import store from "./store/store";
@@ -27,6 +28,7 @@ const router = createBrowserRouter(
         <Route path="/settings" element={<Settings />} />
         <Route path="/notifications" element={<Notifications />} />
       </Route>
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     </Route>,
   ),
 );

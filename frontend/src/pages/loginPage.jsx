@@ -47,12 +47,16 @@ function LoginPage() {
       });
     } catch (error) {
       console.error("Login error:", error);
-      setMessage("Login failed. Please try again.");
+      setMessage(error.message || "Login failed. Please try again.");
     } finally {
       dispatch(checkUserAuth());
       dispatch(fetchRecentMessageRooms());
       navigate("/chat");
     }
+  };
+
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
   };
 
   return user._id ? (
@@ -152,6 +156,18 @@ function LoginPage() {
                   className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                 />
               </label>
+
+              {isLogin && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="cursor-pointer text-sm font-medium text-slate-300 transition hover:text-white"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
 
               <button
                 type="submit"

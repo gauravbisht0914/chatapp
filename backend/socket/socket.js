@@ -3,10 +3,12 @@ import messageHandler from "./handlers/messageHandler.js";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import callHandler from "./handlers/callHandler.js";
+import Presence from "./handlers/presenceHandler.js";
 
 export function socketConnection(io) {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.user?._id);
+    Presence.activePresence(socket)
 
     socket.on("join_user_personal_room", () => {
       socket.join(`${socket.user?._id?.toString()}`);
@@ -14,7 +16,10 @@ export function socketConnection(io) {
     
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.user?._id);
+      Presence.deletePresence(socket)
     });
+
+    socket
 
     roomHandler(socket);
     messageHandler(socket);

@@ -13,6 +13,7 @@ import User from "./models/user.model.js";
 import jwt from "jsonwebtoken";
 import { configCloudinary } from "./utils/cloudinary.js";
 
+
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 configDotenv();
 
