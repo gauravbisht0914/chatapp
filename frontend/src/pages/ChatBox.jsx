@@ -13,7 +13,9 @@ import {
 
 function ChatBubble({ message, isMe, otherUserImage }) {
   return (
-    <div className={`flex gap-2 ${isMe ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`chat-message flex gap-2 ${isMe ? "justify-end" : "justify-start"}`}
+    >
       {!isMe && otherUserImage && (
         <img
           src={otherUserImage}
@@ -24,8 +26,8 @@ function ChatBubble({ message, isMe, otherUserImage }) {
       <div
         className={`max-w-[75%] rounded-xl px-3 py-2 my-px shadow-lg transition ${
           isMe
-            ? "bg-white text-black"
-            : "bg-[#141414] text-slate-100 border-white/10"
+            ? "bg-indigo-600 text-white"
+            : "border border-slate-200 bg-white text-slate-700"
         }`}
       >
         <div className="text-sm leading-6">{message.text}</div>
@@ -97,6 +99,7 @@ export default function ChatBox() {
               )[0],
               isUserActive: response.isUserActive,
             });
+            
             dispatch(
               fetchMessages({
                 roomId: response.roomData._id,
@@ -109,7 +112,7 @@ export default function ChatBox() {
       );
     }
 
-    socket.on("user_presence_update", (userDetails) => {  
+    socket.on("user_presence_update", (userDetails) => {
       setActiveUser((prev) => {
         if (prev._id === userDetails.userId) {
           return { ...prev, isUserActive: userDetails.active };
@@ -189,29 +192,31 @@ export default function ChatBox() {
   console.log(activeUser);
 
   return (
-    <div className="flex h-full overflow-y-auto rounded-4xl border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
-      <RecentUserRooms className={"w-[400px]"}></RecentUserRooms>
+    <div className="flex h-full min-h-0 overflow-hidden bg-white">
+      <RecentUserRooms
+        className={`${roomId ? "hidden lg:flex" : "flex"} w-full shrink-0 lg:w-[330px]`}
+      />
       {roomId && activeUser ? (
-        <div className="flex w-full h-full flex-col overflow-hidden rounded-4xl bg-[#090909]">
-          <div className="border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
+        <div className="flex h-full min-w-0 w-full flex-col overflow-hidden bg-white animate-[fade-in_240ms_ease-out]">
+          <div className="border-b border-slate-200 bg-white p-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <img
                   src={activeUser.profileImage?.url}
                   alt={activeUser?.username}
-                  className="h-14 w-14 rounded-4xl object-cover ring-2 ring-white/20"
+                  className="h-12 w-12 rounded-2xl object-cover ring-2 ring-indigo-50"
                 />
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">
+                  <h2 className="text-xl font-semibold text-slate-900">
                     {activeUser.username}
                   </h2>
-                  <p className={`text-sm text-slate-400 `}>
+                  <p className="text-sm text-slate-500">
                     Status:{" "}
                     <span
                       className={
                         activeUser.isUserActive
-                          ? "text-green-400"
-                          : "text-slate-300"
+                          ? "text-emerald-600"
+                          : "text-slate-400"
                       }
                     >
                       {" "}
@@ -224,13 +229,13 @@ export default function ChatBox() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => startCall(false)}
-                  className="inline-flex items-center gap-2 rounded-3xl bg-white text-black px-4 py-3 text-sm font-semibold transition hover:bg-slate-100"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   📞 Call
                 </button>
                 <button
                   onClick={() => startCall(true)}
-                  className="inline-flex items-center gap-2 rounded-3xl bg-white text-black px-4 py-3 text-sm font-semibold transition hover:bg-slate-100"
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
                 >
                   🎥 Video
                 </button>
@@ -241,7 +246,7 @@ export default function ChatBox() {
           <div
             ref={messagesRef}
             onScroll={handleScroll}
-            className="flex-1 min-h-0 overflow-y-auto border border-white/10 bg-[#0b0b0b] p-2 shadow-inner shadow-white/10"
+            className="flex-1 min-h-0 space-y-2 overflow-y-auto bg-slate-50 p-4 sm:p-6"
           >
             {loadingOlderChats ? <Loader /> : null}
             {storeMessages.map((message) => (
@@ -254,7 +259,7 @@ export default function ChatBox() {
             ))}
           </div>
 
-          <div className="flex-shrink-0  border border-white/10 bg-[#0f0f0f] p-4 shadow-2xl shadow-white/5">
+          <div className="flex-shrink-0 border-t border-slate-200 bg-white p-3 sm:p-4">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -268,20 +273,20 @@ export default function ChatBox() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKey}
                   placeholder="Type a message…"
-                  className="min-h-[4.5rem] w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
+                  className="min-h-[3.5rem] w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
               </label>
               <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => setInput("😀 " + input)}
-                  className="rounded-3xl bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50"
                 >
                   😀
                 </button>
                 <button
                   type="submit"
-                  className="rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
+                  className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
                 >
                   Send
                 </button>
@@ -290,8 +295,8 @@ export default function ChatBox() {
           </div>
         </div>
       ) : (
-        <div className="flex h-full w-full items-center justify-center rounded-[32px] border border-white/10 bg-[#0b0b0b] p-4 text-center text-slate-400 shadow-inner shadow-white/10">
-          Select a chat to start messaging
+        <div className="flex h-full w-full items-center justify-center bg-slate-50 p-4 text-center text-slate-500">
+          Select a conversation to start messaging
         </div>
       )}
 

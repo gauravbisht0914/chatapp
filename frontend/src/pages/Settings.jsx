@@ -8,10 +8,11 @@ import { Loader, Toast } from "@/components/index";
 
 const Settings = () => {
   const currentUser = useSelector((state) => state.user);
-  const [loading,setLoading] = React.useState({
+  const [loading, setLoading] = React.useState({
     loadingForProfileUpdate: false,
     loadingForPasswordUpdate: false,
-  })
+  });
+  const [toast, setToast] = React.useState(null);
 
   const [profileData, setProfileData] = React.useState({
     username: currentUser.username,
@@ -21,12 +22,24 @@ const Settings = () => {
   });
 
   const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    if (!toast) return undefined;
+
+    const timeout = window.setTimeout(() => setToast(null), 4200);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
+
   async function logout() {
     try {
       await Auth.logout();
       window.location.assign("/");
     } catch (error) {
       console.error("Logout error:", error);
+      setToast({
+        type: "error",
+        message: "Could not log out. Please try again.",
+      });
     }
   }
 
@@ -36,8 +49,13 @@ const Settings = () => {
       const res = await User.updateProfilePicture(event.target.files[0]);
       console.log("Profile picture updated:", res);
       dispatch(setUser({ ...currentUser, profileImage: res.newProfileData }));
+      setToast({ type: "success", message: "Profile picture updated." });
     } catch (error) {
       console.error("Error updating profile picture:", error);
+      setToast({
+        type: "error",
+        message: "Could not update your profile picture.",
+      });
     }
   }
 
@@ -48,9 +66,14 @@ const Settings = () => {
       const res = await User.updateProfileName(profileData.username);
       console.log("Profile name updated:", res);
       dispatch(setUser({ ...currentUser, username: res.newProfileData }));
+      setToast({ type: "success", message: "Profile changes saved." });
     } catch (error) {
       console.error("Error updating profile name:", error);
-    }finally {
+      setToast({
+        type: "error",
+        message: "Could not save your profile changes.",
+      });
+    } finally {
       setLoading({ ...loading, loadingForProfileUpdate: false });
     }
   }
@@ -58,35 +81,57 @@ const Settings = () => {
   async function updatePasswordHandler(event) {
     try {
       event.preventDefault();
-      if(profileData.currentPassword.trim() === "" || profileData.newPassword.trim() === ""){
+      if (
+        profileData.currentPassword.trim() === "" ||
+        profileData.newPassword.trim() === ""
+      ) {
         throw new Error("Current password and new password cannot be empty");
       }
-      if(profileData.currentPassword === profileData.newPassword){
-        throw new Error("New password cannot be the same as the current password");
+      if (profileData.currentPassword === profileData.newPassword) {
+        throw new Error(
+          "New password cannot be the same as the current password",
+        );
       }
       setLoading({ ...loading, loadingForPasswordUpdate: true });
-      console.log(profileData)
-      const res = await User.updatePassword({currentPassword:profileData.currentPassword,newPassword: profileData.newPassword});
+      console.log(profileData);
+      const res = await User.updatePassword({
+        currentPassword: profileData.currentPassword,
+        newPassword: profileData.newPassword,
+      });
+      setToast({ type: "success", message: "Password updated successfully." });
     } catch (error) {
       console.error("Error updating password:", error);
+      setToast({
+        type: "error",
+        message: error.message || "Could not update your password.",
+      });
     } finally {
       setLoading({ ...loading, loadingForPasswordUpdate: false });
     }
   }
 
   return (
-    <div className="min-h-screen bg-transparent px-4 py-8 sm:px-6 lg:px-8">
+    <div className="page-enter relative h-full overflow-y-auto bg-white px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+      {toast && (
+        <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center sm:inset-x-auto sm:right-6 sm:justify-end">
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
       <div className="mx-auto max-w-6xl">
-        <div className="rounded-[32px] border border-white/10 bg-[#0f0f0f] p-8 shadow-2xl shadow-white/10 lg:p-12">
-          <div className="mb-10 flex flex-col gap-6 rounded-[28px] border border-white/10 bg-[#111111] p-8 shadow-inner shadow-white/5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 lg:p-10">
+          <div className="mb-8 flex flex-col gap-6 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-6 sm:flex-row sm:items-end sm:justify-between sm:p-8">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
                 Settings
               </p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
                 Manage your profile & account
               </h1>
-              <p className="mt-4 max-w-2xl text-slate-400">
+              <p className="mt-4 max-w-2xl leading-6 text-slate-600">
                 Update the details below to keep your profile current and
                 secure. Change your avatar, name, email, or password with one
                 click.
@@ -122,7 +167,7 @@ const Settings = () => {
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">
-            <section className="rounded-[32px] border border-white/10 bg-[#111111] p-8 shadow-2xl shadow-white/10">
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-2xl font-semibold text-white">
@@ -132,7 +177,6 @@ const Settings = () => {
                     Change your display name, email address, or profile picture.
                   </p>
                 </div>
-                
               </div>
 
               <form className="space-y-5">
@@ -190,12 +234,16 @@ const Settings = () => {
                   type="button"
                   className="w-full rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                 >
-                  {loading.loadingForProfileUpdate ? <Loader /> : "Save profile changes"}
+                  {loading.loadingForProfileUpdate ? (
+                    <Loader />
+                  ) : (
+                    "Save profile changes"
+                  )}
                 </button>
               </form>
             </section>
 
-            <section className="rounded-[32px] border border-white/10 bg-[#111111] p-8 shadow-2xl shadow-white/10">
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-6">
                 <h2 className="text-2xl font-semibold text-white">
                   Change Password
@@ -254,7 +302,7 @@ const Settings = () => {
                 </label>
 
                 <button
-                onClick={updatePasswordHandler}
+                  onClick={updatePasswordHandler}
                   type="button"
                   className="w-full rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
                 >

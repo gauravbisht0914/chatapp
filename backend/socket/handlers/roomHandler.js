@@ -59,7 +59,7 @@ async function roomHandler(socket) {
         .findById(room._id)
         .populate("recipients", "username profileImage _id lastActive");
 
-      let userPresence = presenceHandler.updateAndGetpresenceSubscription(
+      let userPresence = await presenceHandler.updateAndGetPresenceSubscription(
         socket.user._id,
         [
           roomData.recipients.filter(
@@ -67,6 +67,7 @@ async function roomHandler(socket) {
           )[0]._id,
         ],
       );
+      console.log(userPresence, 'ddd')
 
       cb({
         message: `Room joined successfully ${roomIdByClient}`,

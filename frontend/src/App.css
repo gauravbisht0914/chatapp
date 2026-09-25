@@ -1,1 +1,82 @@
 @import "tailwindcss";
+
+@layer utilities {
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .page-enter {
+    animation: fade-in 240ms ease-out both;
+  }
+
+  .chat-message {
+    animation: fade-in 180ms ease-out both;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    cursor: pointer;
+  }
+
+  button:active,
+  a:active,
+  [role="button"]:active {
+    transform: translateY(1px);
+  }
+
+  [class~="bg-[#090909]"],
+  [class~="bg-[#0a0a0a]"],
+  [class~="bg-[#0b0b0b]"],
+  [class~="bg-[#0d0d0d]"],
+  [class~="bg-[#0e0e0e]"],
+  [class~="bg-[#0f0f0f]"],
+  [class~="bg-[#101010]"],
+  [class~="bg-[#111111]"],
+  [class~="bg-[#141414]"] {
+    background-color: #ffffff !important;
+  }
+
+  [class~="border-white/10"] {
+    border-color: #e2e8f0 !important;
+  }
+
+  [class~="text-white"] {
+    color: #172033 !important;
+  }
+
+  [class~="text-slate-100"],
+  [class~="text-slate-200"],
+  [class~="text-slate-300"] {
+    color: #475569 !important;
+  }
+
+  [class~="text-slate-400"],
+  [class~="text-slate-500"] {
+    color: #64748b !important;
+  }
+
+  [class~="bg-white/5"],
+  [class~="bg-white/10"] {
+    background-color: #f8fafc !important;
+  }
+
+  [class~="bg-white"] {
+    background-color: #ffffff !important;
+  }
+
+  [class~="text-black"] {
+    color: #172033 !important;
+  }
+
+  [class~="bg-indigo-600"][class~="text-white"] {
+    color: #ffffff !important;
+  }
+}

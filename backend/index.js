@@ -12,7 +12,7 @@ import dns from "dns";
 import User from "./models/user.model.js";
 import jwt from "jsonwebtoken";
 import { configCloudinary } from "./utils/cloudinary.js";
-
+import { createClient } from "redis";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 configDotenv();
@@ -34,7 +34,7 @@ io.use(async (socket, next) => {
   const token = socket.handshake.headers.cookie
     ? socket.handshake.headers.cookie.split("=")[1]
     : null;
-    console.log(token)
+  console.log(token);
   if (token) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -56,14 +56,25 @@ var corsOptions = {
   credentials: true,
 };
 
+export const redisClient = createClient({
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+  socket: {
+    host: process.env.REDIS_SOCKET_HOST,
+    port: 18689,
+  },
+});
+
+redisClient.on('error',err=>console.log(err))
+await redisClient.connect()
+
 connectDB()
   .then(() => {
     console.log("MongoDB Connected");
     server.listen(PORT, () => {
       console.log(`Starting Server on ${PORT}`);
-      configCloudinary()
+      configCloudinary();
     });
-
   })
   .catch((e) => {
     console.log(e.message);

@@ -1,7 +1,6 @@
 /* eslint-disable preserve-caught-error */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import Auth from "@/backend/Auth";
-import socketConnection from "@/utils/socket.js";
 
 const initialState = {
   _id: "",
@@ -22,7 +21,6 @@ export const checkUserAuth = createAsyncThunk(
   async () => {
       const res = await Auth.isAuthenticated();
       if (res.status === 200) {
-        socketConnection(res.data._id);
         return res.data;
       }
    

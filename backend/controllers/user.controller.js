@@ -98,7 +98,6 @@ async function loginUser(req, res) {
         httpOnly: true,
         secure: true,
         sameSite: "None",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({ message: "Logged in successfully" });
   } catch (error) {
@@ -274,8 +273,6 @@ async function forgetPassword(req, res) {
     if (user.passwordResetTokenExpiredAt < Date.now()) {
       return res.status(400).json({ message: "Token expired" });
     }
-
-    const jwtToken = generateToken(user);
 
     user.password = newPassword;
     user.passwordResetToken = undefined;

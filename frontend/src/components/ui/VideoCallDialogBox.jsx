@@ -281,10 +281,10 @@ function VideoCallDialogBox({
                 <span className="text-slate-400">With</span>
                 <span className="font-medium text-white">{displayName}</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
+              {/* <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Duration</span>
                 <span className="font-medium text-white">{roomId || ""}</span>
-              </div>
+              </div> */}
             </div>
 
             <button

@@ -142,21 +142,21 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090909] px-4 py-10 text-white flex items-center justify-center">
-      <div className="w-full max-w-lg rounded-[32px] border border-white/10 bg-[#101010] p-6 shadow-2xl shadow-slate-950/40 sm:p-8">
+    <div className="page-enter flex min-h-screen items-center justify-center bg-[#f5f7fb] px-4 py-8 text-slate-900 sm:py-10">
+      <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_28px_80px_-45px_rgba(30,41,59,0.45)] sm:p-8">
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-white/20 hover:text-white"
+          className="mb-6 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-indigo-200 hover:text-indigo-700"
         >
           ← Back to login
         </button>
 
         <div className="mb-6">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
             Password recovery
           </p>
-          <h1 className="mt-4 text-3xl font-semibold text-white">
+          <h1 className="mt-4 text-3xl font-semibold text-slate-900">
             Forgot password
           </h1>
         </div>
@@ -233,7 +233,7 @@ function ForgotPasswordPage() {
                   type="password"
                   name="password"
                   value={password}
-                  onChange={(e)=>setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter a new password"
                   className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-white/20 focus:ring-2 focus:ring-white/10"
                 />

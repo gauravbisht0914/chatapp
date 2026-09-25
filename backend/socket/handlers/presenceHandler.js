@@ -1,47 +1,24 @@
+import { redisClient } from "../../index.js";
 import User from "../../models/user.model.js";
 
 class Presence {
-  constructor() {
-    this.userSockets = new Map();
-    this.presenceTimeouts = new Map();
-    this.presenceWatchers = new Map();
-  }
-
-  activePresence(socket) {
+  async activePresence(socket) {
     if (!socket.id || !socket.user) {
       return;
     }
 
     const userId = socket.user._id.toString();
 
-    if (!this.userSockets.has(userId)) {
-      this.userSockets.set(userId, new Set());
-    }
+    await redisClient.sAdd(`user:activeUserSockets:${userId}`, socket.id);
 
-    if (this.presenceTimeouts.has(userId)) {
-      clearTimeout(this.presenceTimeouts.get(userId));
-      this.presenceTimeouts.delete(userId);
-    }
-
-    this.userSockets.get(userId).add(socket.id);
-
-    if (!this.presenceWatchers.has(userId)) {
-      this.presenceWatchers.set(userId, new Set());
-    }
-
-    this.presenceWatchers.get(userId).forEach((subscriberId) => {
-      const subscriberSockets = this.userSockets.get(subscriberId);
-      if (subscriberSockets) {
-        subscriberSockets.forEach((userId) => {
-          socket.to(userId).emit("user_presence_update", {
-            userId: userId,
-            active: true,
-          });
+    (await redisClient.sMembers(`user:presenceSubscription:${userId}`)).map(
+      (_id) => {
+        socket.to(_id.toString()).emit("user_presence_update", {
+          userId: userId,
+          active: true,
         });
-      }
-    });
-
-    console.log(this.userSockets);
+      },
+    );
   }
 
   async deletePresence(socket) {
@@ -51,65 +28,44 @@ class Presence {
 
     const userId = socket.user._id.toString();
 
-    if (this.userSockets.has(userId)) {
-      this.userSockets.get(userId).delete(socket.id);
+    if ((await redisClient.sCard(`user:activeUserSockets:${userId}`)) !== 1) {
+      await redisClient.sRem(`user:activeUserSockets:${userId}`, socket.id);
+      return;
     }
 
-    if (
-      this.userSockets.get(userId)?.size === 0 &&
-      !this.presenceTimeouts.has(userId)
-    ) {
-      this.presenceTimeouts.set(
-        userId,
-        setTimeout(async () => {
-          try {
-            await User.findByIdAndUpdate(userId, {
-              lastActive: new Date(),
-            });
+    setTimeout(async () => {
+      await redisClient.sRem(`user:activeUserSockets:${userId}`, socket.id);
 
-            this.presenceWatchers.get(userId)?.forEach((subscriberId) => {
-              const subscriberSockets = this.userSockets.get(subscriberId);
-              if (subscriberSockets) {
-                subscriberSockets.forEach((userId) => {
-                  socket.to(userId).emit("user_presence_update", {
-                    userId: userId,
-                    active: false,
-                  });
-                });
-              }
-            });
-          } catch (error) {
-            console.log(error);
-          } finally {
-            this.presenceTimeouts.delete(userId);
-          }
-        }, 10000),
+      (await redisClient.sMembers(`user:presenceSubscription:${userId}`)).map(
+        (_id) => {
+          socket.to(_id.toString()).emit("user_presence_update", {
+            userId: userId,
+            active: false,
+          });
+        },
       );
-      this.userSockets.delete(userId);
-    }
-
-    console.log(this.userSockets);
-    return;
+    }, [10000]);
   }
 
-  updateAndGetpresenceSubscription(userId, uids = []) {
-    const subscriberId = userId.toString();
+  async updateAndGetPresenceSubscription(userId, uids = []) {
+    const d = await Promise.all(
+      uids.map(async (_id) => {
+        const key = `user:presenceSubscription:${_id.toString()}`;
 
-    return uids.map((id) => {
-      const targetId = id.toString();
+        await redisClient.sAdd(key, userId);
 
-      if (!this.presenceWatchers.has(targetId)) {
-        this.presenceWatchers.set(targetId, new Set());
-      }
-      console.log(this.userSockets.get(targetId)?.size || 0);
+        return {
+          userId: _id,
+          active: Boolean(
+            await redisClient.exists(
+              `user:activeUserSockets:${_id.toString()}`,
+            ),
+          ),
+        };
+      }),
+    );
 
-      this.presenceWatchers.get(targetId).add(subscriberId);
-      console.log("presenceWatchers", this.presenceWatchers);
-      return {
-        userId: id,
-        active: (this.userSockets.get(targetId)?.size || 0) >= 1,
-      };
-    });
+    return d;
   }
 }
 

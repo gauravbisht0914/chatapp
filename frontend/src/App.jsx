@@ -6,6 +6,8 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { LoginPage } from "./pages";
 import { fetchRecentMessageRooms } from "./store/messageRoomSlice";
+import socketConnection from "@/utils/socket.js";
+
 
 function App() {
   const user = useSelector((state) => state.user.isUserAuthenticated);
@@ -19,7 +21,8 @@ function App() {
 
     const verifyAuth = async () => {
       try {
-        await dispatch(checkUserAuth());
+       await dispatch(checkUserAuth());
+       socketConnection()
         await dispatch(fetchRecentMessageRooms());
       } catch (error) {
         console.error(error);
@@ -28,7 +31,6 @@ function App() {
 
     verifyAuth();
   }, [dispatch]);
-
 
   return user ? (
     <>
@@ -39,23 +41,16 @@ function App() {
           calleeData={userD.incomingCallData?.calleeData}
           roomId={userD.incomingCallData?.roomId}
           // onClose={() => dispatch(toggleCallActive({ callData: null }))}
-
         />
       )}
-      <div className="bg-[#090909] h-full text-slate-100">
-        <div className="h-full ">
-          <div className="flex h-full overflow-hidden shrink-0">
-            <div className="group">
-              <div className="group-hover:fixed group-hover:left-0 group-hover:top-0 h-screen min-w-20 hover:w-64 duration-300 overflow-hidden bg-black z-50">
-                <SideBar className="h-full" />
-              </div>
+      <div className="h-screen overflow-hidden bg-[#f5f7fb] text-slate-900">
+        <div className="flex h-full flex-col lg:flex-row">
+          <SideBar className="order-2 h-[4.5rem] shrink-0 lg:order-1 lg:h-screen lg:w-64" />
+          <main className="order-1 h-[calc(100vh-4.5rem)] min-h-0 flex-1 overflow-hidden p-3 pb-4 sm:p-5 lg:order-2 lg:h-screen lg:p-8">
+            <div className="h-full min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(30,41,59,0.35)] sm:rounded-3xl">
+              <Outlet />
             </div>
-            <main className="flex-1 min-h-0 overflow-hidden p-4 md:p-6 lg:p-8">
-              <div className="h-full overflow-y-auto rounded-4xl border border-white/10 bg-[#0d0d0d] shadow-[0_30px_60px_-40px_rgba(255,255,255,0.16)]">
-                <Outlet />
-              </div>
-            </main>
-          </div>
+          </main>
         </div>
       </div>
     </>

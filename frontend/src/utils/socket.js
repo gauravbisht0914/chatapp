@@ -11,38 +11,45 @@ export const socket = io(`${import.meta.env.VITE_BACKEND_URL || ""}`, {
   autoConnect: false,
   withCredentials: true,
 });
+const handleConnect = () => {
+  socket.emit("join_user_personal_room");
+};
 
-function socketConnection(userId) {
-  socket.connect();
+const handleDisconnect = (reason) => {
+  console.log("Disconnected:", reason);
+};
 
-  socket.on("connect", () => {
-    socket.emit("join_user_personal_room", {});
-  });
-  
-  socket.on("disconnect", () => {
-    console.log("Disconnected from server");
-  });
-  
+const handleChatEvent = (data) => {
+  if (data.call) {
+    console.log("INCOMING CALL TRIGGERED!");
 
-  socket.on("chat_event", (data) => {
-    if (data.call) {
-      console.log('INCOMING CALL TRIGGERED!')
-      audio.loop = true
-      audio.play().catch(console.error);;
-      
-      store.dispatch(toggleCallActive({ callData: data }));
-    }else{
-      console.log("Received message:", data);
-      store.dispatch(pushNewMessages(data));
-      store.dispatch(updateMessageRoom({ newLatestMessageData: data }));
-    }
-  });
+    audio.loop = true;
+    audio.play().catch(console.error);
 
-  return () =>{
-      socket.off("connect")
-      socket.off("disconnect")
-      socket.off("chat_event")
+    store.dispatch(toggleCallActive({ callData: data }));
+  } else {
+    store.dispatch(pushNewMessages(data));
+    store.dispatch(
+      updateMessageRoom({
+        newLatestMessageData: data,
+      }),
+    );
   }
-}
+};
 
+export function socketConnection() {
+  if (!socket.connected) {
+    socket.connect();
+  }
+
+  socket.on("connect", handleConnect);
+  socket.on("disconnect", handleDisconnect);
+  socket.on("chat_event", handleChatEvent);
+
+  return () => {
+    socket.off("connect", handleConnect);
+    socket.off("disconnect", handleDisconnect);
+    socket.off("chat_event", handleChatEvent);
+  };
+}
 export default socketConnection;

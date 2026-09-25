@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { checkUserAuth } from "@/store/userSlice.js";
 import { fetchRecentMessageRooms } from "@/store/messageRoomSlice.js";
+import { Toast } from "@/components/index.js";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -62,49 +63,49 @@ function LoginPage() {
   return user._id ? (
     ""
   ) : (
-    <div className="min-h-screen bg-[#090909] text-white flex items-center justify-center px-4 py-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_18%)]" />
-      <div className="relative z-10 w-full max-w-[90%] overflow-hidden rounded-[32px] border border-white/10 bg-[#101010] shadow-2xl shadow-slate-950/40">
+    <div className="page-enter flex min-h-screen items-center justify-center bg-[#f5f7fb] px-4 py-8 text-slate-900 sm:py-12">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.10),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.10),transparent_28%)]" />
+      <div className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_28px_80px_-45px_rgba(30,41,59,0.45)]">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] p-8 lg:p-10">
-          <div className="rounded-[28px] border border-white/10 bg-[#0f0f0f] p-7 text-white shadow-lg shadow-white/5">
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-7 text-slate-900 shadow-sm sm:p-9">
             <div className="mb-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
                 Welcome back
               </p>
-              <h1 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                 {isLogin ? "Sign in to your chat hub" : "Create a new account"}
               </h1>
-              <p className="mt-3 max-w-md text-sm text-slate-400">
+              <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
                 Secure access with a crisp monochrome layout designed for easy
                 messaging.
               </p>
             </div>
 
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-[#0a0a0a] p-5">
+            <div className="space-y-2 rounded-2xl border border-indigo-100 bg-white p-2">
               <button
                 type="button"
                 onClick={() => setIsLogin(true)}
-                className={`w-full rounded-3xl px-4 py-3 text-sm font-semibold transition ${isLogin ? "bg-white text-black shadow-sm shadow-white/20" : "bg-[#121212] text-slate-300 hover:bg-white/5"}`}
+                className={`w-full rounded-xl px-4 py-3 text-sm font-semibold transition ${isLogin ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:bg-slate-50"}`}
               >
                 Login
               </button>
               <button
                 type="button"
                 onClick={() => setIsLogin(false)}
-                className={`w-full rounded-3xl px-4 py-3 text-sm font-semibold transition ${!isLogin ? "bg-white text-black shadow-sm shadow-white/20" : "bg-[#121212] text-slate-300 hover:bg-white/5"}`}
+                className={`w-full rounded-xl px-4 py-3 text-sm font-semibold transition ${!isLogin ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:bg-slate-50"}`}
               >
                 Sign up
               </button>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-[#0f0f0f] p-8 shadow-lg shadow-white/5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-7 sm:p-9">
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
                   {isLogin ? "Login" : "Create account"}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
                   {isLogin ? "Access your account" : "Start your journey"}
                 </h2>
               </div>
@@ -139,7 +140,7 @@ function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  className="w-full rounded-3xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
               </label>
 
@@ -171,7 +172,7 @@ function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
+                className="w-full rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
               >
                 {isLogin ? "Log in" : "Create account"}
               </button>
@@ -189,8 +190,12 @@ function LoginPage() {
             </p>
 
             {message && (
-              <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white">
-                {message}
+              <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center sm:inset-x-auto sm:right-6 sm:justify-end">
+                <Toast
+                  type="error"
+                  message={message}
+                  onClose={() => setMessage("")}
+                />
               </div>
             )}
 
