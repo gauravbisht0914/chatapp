@@ -11,7 +11,6 @@ import {
   ChatBox,
   Search,
   Settings,
-  Notifications,
   ForgotPasswordPage,
 } from "./pages/index.js";
 import App from "./App.jsx";
@@ -26,7 +25,6 @@ const router = createBrowserRouter(
         <Route path="/chat/:id?" element={<ChatBox />} />
         <Route path="/search" element={<Search />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/notifications" element={<Notifications />} />
       </Route>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     </Route>,

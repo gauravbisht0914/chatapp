@@ -23,13 +23,6 @@ const Settings = () => {
 
   const dispatch = useDispatch();
 
-  React.useEffect(() => {
-    if (!toast) return undefined;
-
-    const timeout = window.setTimeout(() => setToast(null), 4200);
-    return () => window.clearTimeout(timeout);
-  }, [toast]);
-
   async function logout() {
     try {
       await Auth.logout();
@@ -94,7 +87,7 @@ const Settings = () => {
       }
       setLoading({ ...loading, loadingForPasswordUpdate: true });
       console.log(profileData);
-      const res = await User.updatePassword({
+      await User.updatePassword({
         currentPassword: profileData.currentPassword,
         newPassword: profileData.newPassword,
       });
@@ -113,13 +106,11 @@ const Settings = () => {
   return (
     <div className="page-enter relative h-full overflow-y-auto bg-white px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
       {toast && (
-        <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center sm:inset-x-auto sm:right-6 sm:justify-end">
-          <Toast
-            type={toast.type}
-            message={toast.message}
-            onClose={() => setToast(null)}
-          />
-        </div>
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
       )}
       <div className="mx-auto max-w-6xl">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 lg:p-10">

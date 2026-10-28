@@ -3,6 +3,7 @@ import { socket } from "../utils/socket.js";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { clearMessages, fetchMessages } from "@/store/messageSlice.js";
+import { setFocusedRoom } from "@/store/notificationSlice.js";
 import { useDispatch } from "react-redux";
 import messageHandler from "../utils/sockets/messageHandler.js";
 import { RecentUserRooms, CallDialogBox, Loader } from "@/components/index.js";
@@ -41,6 +42,7 @@ function ChatBubble({ message, isMe, otherUserImage }) {
 
 export default function ChatBox() {
   const roomId = useParams().id;
+  const userId = useSelector((state) => state.user._id);
   console.log(roomId);
   const user = useSelector((state) => state.user);
   const storeMessages = useSelector((state) => state.message);
@@ -77,12 +79,12 @@ export default function ChatBox() {
   }, [storeMessages]); // this code will put the scroll to bottom when the component is mounted and when the storeMessages changes.
 
   useEffect(() => {
+    dispatch(setFocusedRoom(roomId || null));
     dispatch(clearMessages());
     hasScrolledToBottom.current = false; // reset scroll flag when component remounts or roomId changes
     console.log("roomId", roomId);
-    console.log("user._id", user);
 
-    if (user._id && roomId) {
+    if (userId && roomId) {
       socket.emit(
         "joinRoom",
         { roomIdByClient: roomId, recipients: [] },
@@ -91,7 +93,7 @@ export default function ChatBox() {
           if (response.roomData?._id) {
             setActiveUser({
               ...response.roomData.recipients.filter(
-                (r) => r._id !== user._id,
+                (r) => r._id !== userId,
               )[0],
               isUserActive: response.isUserActive,
             });
@@ -108,15 +110,22 @@ export default function ChatBox() {
       );
     }
 
-    socket.on("user_presence_update", (userDetails) => {
+    const handlePresenceUpdate = (userDetails) => {
       setActiveUser((prev) => {
         if (prev._id === userDetails.userId) {
           return { ...prev, isUserActive: userDetails.active };
         }
         return prev;
       });
-    });
-  }, [roomId, user._id]);
+    };
+
+    socket.on("user_presence_update", handlePresenceUpdate);
+
+    return () => {
+      socket.off("user_presence_update", handlePresenceUpdate);
+      dispatch(setFocusedRoom(null));
+    };
+  }, [dispatch, roomId, userId]);
 
   function sendMessage() {
     if (!input.trim()) return;

@@ -15,7 +15,7 @@ function LoginPage() {
     if (user._id) {
       navigate("/chat");
     }
-  }, [user]);
+  }, [navigate, user]);
 
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -190,13 +190,11 @@ function LoginPage() {
             </p>
 
             {message && (
-              <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center sm:inset-x-auto sm:right-6 sm:justify-end">
-                <Toast
-                  type="error"
-                  message={message}
-                  onClose={() => setMessage("")}
-                />
-              </div>
+              <Toast
+                type="error"
+                message={message}
+                onClose={() => setMessage("")}
+              />
             )}
 
             <div className="mt-8 rounded-3xl border border-white/10 bg-[#111111] p-4 text-sm text-slate-400">

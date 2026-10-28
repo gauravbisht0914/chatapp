@@ -29,12 +29,6 @@ function SideBar({ className }) {
                 <ion-icon name="settings-outline" class="text-xl" />
                 <span>Settings</span>
               </NavLink>
-              <NavLink to="/notifications" className={navStyle}>
-                <ion-icon name="notifications-outline" class="text-xl" />
-                <span className="hidden sm:inline lg:inline">
-                  Notifications
-                </span>
-              </NavLink>
             </nav>
           </div>
         </div>

@@ -7,11 +7,41 @@ import { useDispatch, useSelector } from "react-redux";
 import { LoginPage } from "./pages";
 import { fetchRecentMessageRooms } from "./store/messageRoomSlice";
 import socketConnection from "@/utils/socket.js";
+import {
+  dismissMessageNotification,
+  loadRoomPreferences,
+} from "./store/notificationSlice.js";
+import { Toast } from "./components/index.js";
 
+function getMutedRoomIds(userId) {
+  try {
+    const storedPreferences = window.localStorage.getItem(
+      `chatapp:mutedRooms:${userId}`,
+    );
+    if (!storedPreferences) return [];
+
+    const mutedRoomIds = JSON.parse(storedPreferences);
+    if (
+      !Array.isArray(mutedRoomIds) ||
+      mutedRoomIds.some((roomId) => typeof roomId !== "string")
+    ) {
+      throw new TypeError("Stored muted room preferences are invalid.");
+    }
+
+    return mutedRoomIds;
+  } catch (error) {
+    console.error("Unable to load muted room preferences:", error);
+    return [];
+  }
+}
 
 function App() {
   const user = useSelector((state) => state.user.isUserAuthenticated);
   const userD = useSelector((state) => state.user);
+  const notifications = useSelector(
+    (state) => state.notifications.notifications,
+  );
+  const roomPreferences = useSelector((state) => state.notifications);
   const dispatch = useDispatch();
   const hasInitialized = React.useRef(false);
 
@@ -21,8 +51,7 @@ function App() {
 
     const verifyAuth = async () => {
       try {
-       await dispatch(checkUserAuth());
-       socketConnection()
+        await dispatch(checkUserAuth());
         await dispatch(fetchRecentMessageRooms());
       } catch (error) {
         console.error(error);
@@ -32,8 +61,72 @@ function App() {
     verifyAuth();
   }, [dispatch]);
 
+  React.useEffect(() => {
+    if (!userD.isUserAuthenticated || !userD._id) return;
+
+    dispatch(
+      loadRoomPreferences({
+        userId: userD._id,
+        mutedRoomIds: getMutedRoomIds(userD._id),
+      }),
+    );
+  }, [dispatch, userD._id, userD.isUserAuthenticated]);
+
+  React.useEffect(() => {
+    if (
+      !roomPreferences.preferencesLoaded ||
+      roomPreferences.preferencesUserId !== userD._id ||
+      !userD._id
+    ) {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        `chatapp:mutedRooms:${userD._id}`,
+        JSON.stringify(roomPreferences.mutedRoomIds),
+      );
+    } catch (error) {
+      console.error("Unable to save muted room preferences:", error);
+    }
+  }, [
+    roomPreferences.mutedRoomIds,
+    roomPreferences.preferencesLoaded,
+    roomPreferences.preferencesUserId,
+    userD._id,
+  ]);
+
+  React.useEffect(() => {
+    if (
+      !userD.isUserAuthenticated ||
+      !userD._id ||
+      !roomPreferences.preferencesLoaded ||
+      roomPreferences.preferencesUserId !== userD._id
+    ) {
+      return undefined;
+    }
+
+    return socketConnection();
+  }, [
+    roomPreferences.preferencesLoaded,
+    roomPreferences.preferencesUserId,
+    userD._id,
+    userD.isUserAuthenticated,
+  ]);
+
   return user ? (
     <>
+      {notifications.map((notification) => (
+        <Toast
+          type="message"
+          title={notification.title}
+          message={notification.message}
+          key={notification.id}
+          onClose={() =>
+            dispatch(dismissMessageNotification(notification.id))
+          }
+        />
+      ))}
       {userD.incomingCallData && (
         <CallDialogBox
           key={userD.incomingCallData.offer?.sdp}

@@ -1,43 +1,40 @@
 import Message from "../../models/message.model.js";
 
 async function messageHandler(socket) {
-  try {
-    socket.on(
-      "sendMessage",
-      async ({ roomId, senderId, content, recipientId }, cb) => {
-        let newMessage;
+  socket.on(
+    "sendMessage",
+    async (payload = {}, callback) => {
+      const { roomId, senderId, content, recipientId } = payload;
+      const acknowledge = typeof callback === "function" ? callback : () => {};
 
-        if (roomId && senderId && content) {
-          newMessage = await Message.create({
-            senderId: senderId,
-            recipientId: recipientId,
-            roomId: roomId,
-            text: content,
-          });
-          if (!newMessage) {
-            cb({
-              success: false,
-              message: "Error while creating new message",
-              roomId: roomId,
-            });
-          }
-
-          cb({
-            ...newMessage._doc,
-          });
-        }
-
-        cb({
+      if (!roomId || !senderId || !content || !recipientId) {
+        acknowledge({
           success: false,
-          message: "RoomId, senderId and content are required",
+          message: "RoomId, senderId, recipientId and content are required",
+        });
+        return;
+      }
+
+      try {
+        const newMessage = await Message.create({
+          senderId,
+          recipientId,
+          roomId,
+          text: content,
         });
 
-        socket.to(`${recipientId}`).emit("chat_event", newMessage);
-      },
-    );
-  } catch (err) {
-    console.error("Error in messageHandler:", err.message);
-  }
+        acknowledge({ ...newMessage._doc });
+        socket.to(String(recipientId)).emit("chat_event", newMessage);
+      } catch (error) {
+        console.error("Error while creating new message:", error);
+        acknowledge({
+          success: false,
+          message: "Error while creating new message",
+          roomId,
+        });
+      }
+    },
+  );
 }
 
 export default messageHandler;

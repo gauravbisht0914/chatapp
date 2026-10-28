@@ -1,10 +1,14 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink } from "react-router";
+import { toggleRoomMuted } from "@/store/notificationSlice.js";
 
 function RecentUserRooms({ className }) {
   const recentUserRooms = useSelector((state) => state.messageRoom ?? []);
   const currentUser = useSelector((state) => state.user);
+  const mutedRoomIds = useSelector(
+    (state) => state.notifications.mutedRoomIds,
+  );
+  const dispatch = useDispatch();
 
   const formatTime = (value) => {
     if (!value) return "";
@@ -18,8 +22,6 @@ function RecentUserRooms({ className }) {
       hour12: true,
     });
   };
-  console.log(recentUserRooms);
-
   return (
     <aside
       className={`${className || ""} flex h-full flex-col border-r border-slate-200 bg-white`}
@@ -56,40 +58,63 @@ function RecentUserRooms({ className }) {
                 ? `You: ${latestText}`
                 : latestText;
 
-            return (
-              <NavLink
-                to={`/chat/${room?._id}`}
-                key={room?._id || `${displayName}-${room?.createdAt}`}
-                className={({ isActive }) =>
-                  `group flex cursor-pointer items-center gap-3 rounded-[24px] border p-3 transition ${
-                    isActive
-                      ? "border-indigo-200 bg-indigo-50"
-                      : "border-transparent bg-white hover:border-slate-200 hover:bg-slate-50"
-                  } `
-                }
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-4xl bg-gradient-to-br from-white/15 to-white/5 text-sm font-semibold text-white">
-                  <img
-                    src={
-                      avatarSrc ||
-                      "https://th.bing.com/th/id/OIP.hGSCbXlcOjL_9mmzerqAbQHaHa?rs=1&pid=ImgDetMain"
-                    }
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+            const isMuted = mutedRoomIds.includes(String(room?._id));
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-slate-900">
-                      {displayName}
-                    </p>
-                    <span className="text-[11px] text-slate-500">
-                      {formatTime(room?.latestMessage?.createdAt)}
-                    </span>
+            return (
+              <div
+                key={room?._id || `${displayName}-${room?.createdAt}`}
+                className="group flex items-center gap-1 rounded-[24px] border border-transparent pr-2 transition hover:border-slate-200 hover:bg-slate-50"
+              >
+                <NavLink
+                  to={`/chat/${room?._id}`}
+                  className={({ isActive }) =>
+                    `flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-[24px] p-3 transition ${
+                      isActive
+                        ? "bg-indigo-50"
+                        : "bg-white group-hover:bg-slate-50"
+                    }`
+                  }
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-4xl bg-gradient-to-br from-white/15 to-white/5 text-sm font-semibold text-white">
+                    <img
+                      src={
+                        avatarSrc ||
+                        "https://th.bing.com/th/id/OIP.hGSCbXlcOjL_9mmzerqAbQHaHa?rs=1&pid=ImgDetMain"
+                      }
+                      alt={displayName}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
-                  <p className="truncate text-sm text-slate-400">{preview}</p>
-                </div>
-              </NavLink>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-semibold text-slate-900">
+                        {displayName}
+                      </p>
+                      <span className="text-[11px] text-slate-500">
+                        {formatTime(room?.latestMessage?.createdAt)}
+                      </span>
+                    </div>
+                    <p className="truncate text-sm text-slate-400">{preview}</p>
+                  </div>
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={() => dispatch(toggleRoomMuted(String(room?._id)))}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-indigo-600"
+                  aria-label={`${isMuted ? "Unmute" : "Mute"} ${displayName}`}
+                  title={`${isMuted ? "Unmute" : "Mute"} notifications`}
+                >
+                  <ion-icon
+                    name={
+                      isMuted
+                        ? "notifications-off-outline"
+                        : "notifications-outline"
+                    }
+                    class="text-lg"
+                  />
+                </button>
+              </div>
             );
           })
         )}

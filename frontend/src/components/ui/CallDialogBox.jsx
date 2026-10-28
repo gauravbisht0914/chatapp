@@ -61,6 +61,8 @@ function CallDialogBox({
 
   useEffect(() => {
     const handleCallEnded = ({ reason }) => cancelCall(reason, false);
+    const handleCallBusy = ({ reason }) =>
+      cancelCall(reason || "User is busy", false);
     const handleCallResponse = async ({ answer }) => {
       if (answer && peerConnection.current) {
         stopRingtone();
@@ -83,6 +85,7 @@ function CallDialogBox({
     };
 
     socket.on("call_ended", handleCallEnded);
+    socket.on("call_busy", handleCallBusy);
     socket.on("call_response", handleCallResponse);
     socket.on("ice_candidate", handleIceCandidate);
 
@@ -215,6 +218,7 @@ function CallDialogBox({
     return () => {
       clearTimeout(ringingTimeout.current);
       socket.off("call_ended", handleCallEnded);
+      socket.off("call_busy", handleCallBusy);
       socket.off("call_response", handleCallResponse);
       socket.off("ice_candidate", handleIceCandidate);
     };
@@ -260,15 +264,15 @@ function CallDialogBox({
   if (openCallDialog) {
     if (callEnded.isCallEnded) {
       return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[30px] border border-white/10 bg-[#0f0f0f] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-3 backdrop-blur-sm sm:p-6">
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[24px] border border-white/10 bg-[#0f0f0f] p-4 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:rounded-[30px] sm:p-6">
             <div className="flex items-center justify-between">
               <div className="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-red-300">
-                Call ended
+                {callEnded.reason === "User is busy" ? "User is busy" : "Call ended"}
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col items-center text-center">
+            <div className="mt-4 flex flex-col items-center text-center sm:mt-6">
               <img
                 src={displayData?.profileImage?.url}
                 alt={displayName}
@@ -287,7 +291,7 @@ function CallDialogBox({
               </p>
             </div>
 
-            <div className="mt-6 space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4">
+            <div className="mt-4 space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4 sm:mt-6">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Status</span>
                 <span className="rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-300">
@@ -314,7 +318,7 @@ function CallDialogBox({
                    onClose();
                  }
               }}
-              className="mt-6 w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
+              className="mt-4 w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-slate-100 sm:mt-6"
             >
               Close
             </button>
@@ -326,10 +330,10 @@ function CallDialogBox({
     return (
       <>
         {openCallDialog ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
-            <div className="w-full max-w-4xl rounded-4xl border border-white/10 bg-[#0f0f0f] p-5 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-6">
+          <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 backdrop-blur-sm ${isVideoCall && callAccepted ? "p-0" : "p-2 sm:p-6"}`}>
+            <div className={`w-full overflow-y-auto border border-white/10 bg-[#0f0f0f] shadow-[0_20px_80px_rgba(0,0,0,0.35)] ${isVideoCall && callAccepted ? "flex h-[100dvh] max-h-[100dvh] max-w-none flex-col rounded-none p-0" : "max-h-[calc(100dvh-1rem)] max-w-4xl rounded-3xl p-3 sm:p-6 sm:rounded-4xl"}`}>
               {!callAccepted ? (
-                <div className="flex min-h-[24rem] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-[#111111] px-6 py-10 text-center">
+                <div className="flex min-h-[18rem] flex-col items-center justify-center rounded-[24px] border border-white/10 bg-[#111111] px-4 py-8 text-center sm:min-h-[24rem] sm:rounded-[28px] sm:px-6 sm:py-10">
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl">
                     <img
                       src={displayData.profileImage?.url}
@@ -337,10 +341,10 @@ function CallDialogBox({
                       className="h-14 w-14 rounded-4xl object-cover ring-2 ring-white/20"
                     />
                   </div>
-                  <p className="text-[11px] uppercase tracking-[0.35em] text-slate-400">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 sm:tracking-[0.35em]">
                     {isIncomingCall ? "Incoming call" : "Start a call"}
                   </p>
-                  <h3 className="mt-2 text-2xl font-semibold text-white">
+                  <h3 className="mt-2 text-xl font-semibold text-white sm:text-2xl">
                     {isIncomingCall
                       ? `Join with ${displayName}`
                       : `Call ${displayName}`}
@@ -351,7 +355,7 @@ function CallDialogBox({
                       : `Open a quick ${isVideoCall ? "video" : "audio"} chat with a calm, minimal experience.`}
                   </p>
 
-                  <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                  <div className="mt-6 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-7 sm:w-auto sm:flex-row sm:items-center">
                     {isIncomingCall ? (
                       <>
                         <button
@@ -387,7 +391,7 @@ function CallDialogBox({
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${isVideoCall ? "shrink-0 p-4 sm:px-6" : ""}`}>
                     <div className="flex items-center gap-3">
                       <img
                         src={
@@ -399,33 +403,33 @@ function CallDialogBox({
                         className="h-12 w-12 rounded-3xl object-cover ring-2 ring-white/10"
                       />
                       <div>
-                        <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-400 sm:text-sm sm:tracking-[0.3em]">
                           {callTypeLabel}
                         </p>
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-lg font-semibold text-white sm:text-xl">
                           {displayName}
                         </h3>
                       </div>
                     </div>
                     <button
                       onClick={() => cancelCall("Call Ended")}
-                      className="rounded-3xl bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-400"
+                      className="w-fit rounded-2xl bg-red-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-400 sm:rounded-3xl"
                     >
                       End call
                     </button>
                   </div>
 
                   {isVideoCall ? (
-                    <div className="mt-5 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-                      <div className="min-h-[18rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/80 p-4 shadow-inner shadow-slate-950/20">
+                    <div className={`relative grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[1.6fr_1fr] lg:gap-4 ${isVideoCall && callAccepted ? "mt-0 p-2 sm:p-4" : "mt-4"}`}>
+                      <div className="h-full min-h-0 overflow-hidden rounded-[22px] border border-white/10 bg-slate-900/80 p-2 shadow-inner shadow-slate-950/20 sm:rounded-[28px] sm:p-4">
                         <video
                           ref={remoteVideoRef}
                           autoPlay
                           playsInline
-                          className="h-full w-full rounded-[20px] object-cover"
+                          className="h-full w-full rounded-[16px] object-cover sm:rounded-[20px]"
                         />
                       </div>
-                      <div className="relative min-h-[18rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/90">
+                      <div className="absolute bottom-3 right-3 z-10 h-[22%] max-h-40 w-[30%] max-w-36 overflow-hidden rounded-2xl border border-white/20 bg-slate-900/90 shadow-xl lg:relative lg:bottom-auto lg:right-auto lg:h-full lg:max-h-none lg:w-auto lg:max-w-none lg:rounded-[28px]">
                         <video
                           ref={localVideoRef}
                           autoPlay
@@ -433,10 +437,11 @@ function CallDialogBox({
                           muted
                           className="h-full w-full object-cover"
                         />
-                        <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full backdrop-blur-md">
+                        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full backdrop-blur-md lg:bottom-4 lg:gap-3">
                           <button
                             onClick={toggleMute}
-                            className="flex text-xl text-red-600 h-11 w-11 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+                            aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-lg text-red-600 transition hover:bg-white/30 sm:h-11 sm:w-11 sm:text-xl"
                           >
                             {isMuted ? (
                               <ion-icon name="mic-off"></ion-icon>
@@ -447,7 +452,8 @@ function CallDialogBox({
 
                           <button
                             onClick={toggleCamera}
-                            className={`flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-xl ${isCameraOff ? null : "text-red-600"} transition hover:bg-white/20 `}
+                            aria-label={isCameraOff ? "Turn camera on" : "Turn camera off"}
+                            className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-lg ${isCameraOff ? "" : "text-red-600"} transition hover:bg-white/30 sm:h-11 sm:w-11 sm:text-xl`}
                           >
                             <ion-icon name="videocam"></ion-icon>
                           </button>
@@ -455,18 +461,19 @@ function CallDialogBox({
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-5 flex min-h-[18rem] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-slate-900/90 p-6">
+                    <div className="mt-4 flex min-h-[14rem] flex-col items-center justify-center rounded-[24px] border border-white/10 bg-slate-900/90 p-5 sm:mt-5 sm:min-h-[18rem] sm:rounded-[28px] sm:p-6">
                       <img
                         src={displayData?.profileImage?.url}
                         alt={displayName}
-                        className="h-24 w-24 rounded-full object-cover ring-2 ring-white/10"
+                        className="h-20 w-20 rounded-full object-cover ring-2 ring-white/10 sm:h-24 sm:w-24"
                       />
                       <p className="mt-4 text-lg font-semibold text-white">
                         {displayName}
                       </p>
                       <button
                         onClick={toggleMute}
-                        className="mt-6 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-xl text-red-600 transition hover:bg-white/20"
+                        aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+                        className="mt-5 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-xl text-red-600 transition hover:bg-white/20 sm:mt-6"
                       >
                         {isMuted ? (
                           <ion-icon name="mic-off"></ion-icon>

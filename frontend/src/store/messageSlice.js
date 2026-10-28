@@ -28,7 +28,11 @@ export const messageSlice = createSlice({
   initialState,
   reducers: {
     pushNewMessages:(state,action)=>{
-      state.push(action.payload)
+      const message = action.payload;
+      if (!message?._id || state.some((item) => item._id === message._id)) {
+        return;
+      }
+      state.push(message);
     },
     clearMessages: () => {
      return [] ;
