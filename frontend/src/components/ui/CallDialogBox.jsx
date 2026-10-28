@@ -1,11 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
-import { socket, audio } from "../../utils/socket.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { socket, audio, stopRingtone } from "../../utils/socket.js";
 
-function VideoCallDialogBox({
+const config = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+  ],
+};
+
+function CallDialogBox({
   incomingCallOffer,
   callerData,
   calleeData,
   roomId,
+  callType = "Audio",
   toggleVideoCallDialogBox,
   onClose,
 }) {
@@ -26,42 +34,62 @@ function VideoCallDialogBox({
   const localStream = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const remoteAudioRef = useRef(null);
   const ringingTimeout = useRef(null);
 
-  console.log(callEnded);
-  console.log(callEnded.reason);
-
-  const config = {
-    iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" },
-    ],
-  };
-
   const isIncomingCall = Boolean(incomingCallOffer);
+  const isVideoCall = callType === "Video";
+  const callTypeLabel = isVideoCall ? "Video call" : "Audio call";
   const displayData = isIncomingCall ? callerData : calleeData;
   const displayName = displayData?.username || "Unknown User";
 
   function startCall() {
+    stopRingtone();
     setOpenCallDialog(true);
     setIsCallStarted(true);
   }
 
-  function cancelCall(reason = "") {
+  const cancelCall = useCallback((reason = "", notifyPeer = true) => {
     setIsCallStarted(false);
-    socket.emit("call_ended", { roomId, reason });
-    setCallEnded({ isCallEnded: true, reason: reason });
+    if (notifyPeer) {
+      socket.emit("call_ended", { roomId, reason });
+    }
+    setCallEnded({ isCallEnded: true, reason });
     setCallRinging(false);
-    audio.pause();
-    audio.currentTime = 0;
-  }
+    stopRingtone();
+  }, [roomId]);
 
   useEffect(() => {
-    socket.on("call_ended", (e) => cancelCall(e.reason));
+    const handleCallEnded = ({ reason }) => cancelCall(reason, false);
+    const handleCallResponse = async ({ answer }) => {
+      if (answer && peerConnection.current) {
+        stopRingtone();
+        setCallRinging(false);
+        clearTimeout(ringingTimeout.current);
+        const remoteDesc = new RTCSessionDescription(answer);
+        await peerConnection.current.setRemoteDescription(remoteDesc);
+      }
+    };
+    const handleIceCandidate = async ({ candidate }) => {
+      try {
+        if (peerConnection.current) {
+          await peerConnection.current.addIceCandidate(
+            new RTCIceCandidate(candidate),
+          );
+        }
+      } catch (error) {
+        console.error("Error adding ICE candidate", error);
+      }
+    };
+
+    socket.on("call_ended", handleCallEnded);
+    socket.on("call_response", handleCallResponse);
+    socket.on("ice_candidate", handleIceCandidate);
+
     async function startLocalMedia() {
       try {
         stream.current = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: isVideoCall,
           audio: true,
         });
 
@@ -82,13 +110,6 @@ function VideoCallDialogBox({
         );
         peerConnection.current = new RTCPeerConnection(config);
 
-        socket.on("call_response", async (e) => {
-          if (e.answer) {
-            const remoteDesc = new RTCSessionDescription(e.answer);
-            await peerConnection.current.setRemoteDescription(remoteDesc);
-          }
-        });
-
         stream.current.getTracks().forEach((track) => {
           peerConnection.current.addTrack(track, stream.current);
         });
@@ -101,6 +122,7 @@ function VideoCallDialogBox({
             setCallAccepted(true);
             setCallRinging(false);
             clearTimeout(ringingTimeout.current);
+            stopRingtone();
           }
         };
 
@@ -118,22 +140,12 @@ function VideoCallDialogBox({
           roomId: roomId,
           calleeData: calleeData,
           callerData: callerData,
+          callType,
         });
 
         peerConnection.current.ontrack = (event) => {
           remoteStream.current = event.streams[0];
         };
-
-        socket.on("ice_candidate", async ({ candidate }) => {
-          try {
-            console.log(candidate,".......")
-            await peerConnection.current.addIceCandidate(
-              new RTCIceCandidate(candidate),
-            );
-          } catch (err) {
-            console.log("Error adding ICE candidate", err);
-          }
-        });
       } catch (error) {
         console.error(error);
       }
@@ -141,8 +153,7 @@ function VideoCallDialogBox({
 
     async function acceptCall(e) {
       try {
-        audio.pause();
-        audio.currentTime = 0;
+        stopRingtone();
         if (e) {
           peerConnection.current = new RTCPeerConnection(config);
 
@@ -180,16 +191,6 @@ function VideoCallDialogBox({
             offerAnswer: answer,
             roomId: roomId,
           });
-
-          socket.on("ice_candidate", async ({ candidate }) => {
-            try {
-              await peerConnection.current.addIceCandidate(
-                new RTCIceCandidate(candidate),
-              );
-            } catch (err) {
-              console.log("Error adding ICE candidate", err);
-            }
-          });
         }
       } catch (error) {
         console.error(error);
@@ -212,29 +213,43 @@ function VideoCallDialogBox({
     }
 
     return () => {
-      socket.off("call_reponse");
-      socket.off("ice_candidate");
-      socket.off("end_call");
-      socket.off("call_ended");
+      clearTimeout(ringingTimeout.current);
+      socket.off("call_ended", handleCallEnded);
+      socket.off("call_response", handleCallResponse);
+      socket.off("ice_candidate", handleIceCandidate);
     };
-  }, [isCallStarted]);
+  }, [
+    calleeData,
+    callType,
+    callerData,
+    cancelCall,
+    incomingCallOffer,
+    isCallStarted,
+    isVideoCall,
+    roomId,
+  ]);
 
   useEffect(() => {
-    if (localVideoRef.current && remoteVideoRef.current) {
+    if (isVideoCall && localVideoRef.current && remoteVideoRef.current) {
       localVideoRef.current.srcObject = stream.current;
       remoteVideoRef.current.srcObject = remoteStream.current;
     }
-  }, [callAccepted]); // setting local and remote data when call gets accepted by another peer
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = remoteStream.current;
+    }
+  }, [callAccepted, isVideoCall]); // setting local and remote data when call gets accepted by another peer
 
   const toggleMute = () => {
-    const audioTrack = localStream.current.getAudioTracks()[0];
+    const audioTrack = localStream.current?.getAudioTracks()[0];
+    if (!audioTrack) return;
 
     audioTrack.enabled = !audioTrack.enabled;
     setIsMuted(!audioTrack.enabled);
   };
 
   const toggleCamera = () => {
-    const videoTrack = localStream.current.getVideoTracks()[0];
+    const videoTrack = localStream.current?.getVideoTracks()[0];
+    if (!videoTrack) return;
 
     videoTrack.enabled = !videoTrack.enabled;
     setIsCameraOff(!videoTrack.enabled);
@@ -266,7 +281,9 @@ function VideoCallDialogBox({
                 {displayName}
               </h3>
               <p className="mt-1 text-sm text-slate-400">
-                {isIncomingCall ? "Incoming video call" : "Outgoing video call"}
+                {isIncomingCall
+                  ? `Incoming ${callTypeLabel.toLowerCase()}`
+                  : `Outgoing ${callTypeLabel.toLowerCase()}`}
               </p>
             </div>
 
@@ -292,6 +309,9 @@ function VideoCallDialogBox({
                  setOpenCallDialog(false);
                  if (toggleVideoCallDialogBox) {
                    toggleVideoCallDialogBox(false);
+                 }
+                 if (onClose) {
+                   onClose();
                  }
               }}
               className="mt-6 w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-slate-100"
@@ -327,8 +347,8 @@ function VideoCallDialogBox({
                   </h3>
                   <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">
                     {isIncomingCall
-                      ? "A video call is waiting for you. Join now and continue the conversation."
-                      : "Open a quick video chat with a calm, minimal experience."}
+                      ? `${isVideoCall ? "A video" : "An audio"} call is waiting for you. Join now and continue the conversation.`
+                      : `Open a quick ${isVideoCall ? "video" : "audio"} chat with a calm, minimal experience.`}
                   </p>
 
                   <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
@@ -380,7 +400,7 @@ function VideoCallDialogBox({
                       />
                       <div>
                         <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                          Video call
+                          {callTypeLabel}
                         </p>
                         <h3 className="text-xl font-semibold text-white">
                           {displayName}
@@ -395,44 +415,68 @@ function VideoCallDialogBox({
                     </button>
                   </div>
 
-                  <div className="mt-5 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-                    <div className="min-h-[18rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/80 p-4 shadow-inner shadow-slate-950/20">
-                      <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className="h-full w-full rounded-[20px] object-cover"
-                      />
-                    </div>
-                    <div className="relative min-h-[18rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/90">
-                      <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full backdrop-blur-md">
-                        <button
-                          onClick={toggleMute}
-                          className="flex text-xl text-red-600 h-11 w-11 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
-                        >
-                          {isMuted ? (
-                            <ion-icon name="mic-off"></ion-icon>
-                          ) : (
-                            <ion-icon name="mic"></ion-icon>
-                          )}
-                        </button>
+                  {isVideoCall ? (
+                    <div className="mt-5 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+                      <div className="min-h-[18rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/80 p-4 shadow-inner shadow-slate-950/20">
+                        <video
+                          ref={remoteVideoRef}
+                          autoPlay
+                          playsInline
+                          className="h-full w-full rounded-[20px] object-cover"
+                        />
+                      </div>
+                      <div className="relative min-h-[18rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/90">
+                        <video
+                          ref={localVideoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full backdrop-blur-md">
+                          <button
+                            onClick={toggleMute}
+                            className="flex text-xl text-red-600 h-11 w-11 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+                          >
+                            {isMuted ? (
+                              <ion-icon name="mic-off"></ion-icon>
+                            ) : (
+                              <ion-icon name="mic"></ion-icon>
+                            )}
+                          </button>
 
-                        <button
-                          onClick={toggleCamera}
-                          className={`flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-xl ${isCameraOff ? null : "text-red-600"} transition hover:bg-white/20 `}
-                        >
-                          <ion-icon name="videocam"></ion-icon>
-                        </button>
+                          <button
+                            onClick={toggleCamera}
+                            className={`flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-xl ${isCameraOff ? null : "text-red-600"} transition hover:bg-white/20 `}
+                          >
+                            <ion-icon name="videocam"></ion-icon>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mt-5 flex min-h-[18rem] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-slate-900/90 p-6">
+                      <img
+                        src={displayData?.profileImage?.url}
+                        alt={displayName}
+                        className="h-24 w-24 rounded-full object-cover ring-2 ring-white/10"
+                      />
+                      <p className="mt-4 text-lg font-semibold text-white">
+                        {displayName}
+                      </p>
+                      <button
+                        onClick={toggleMute}
+                        className="mt-6 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-xl text-red-600 transition hover:bg-white/20"
+                      >
+                        {isMuted ? (
+                          <ion-icon name="mic-off"></ion-icon>
+                        ) : (
+                          <ion-icon name="mic"></ion-icon>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                  {!isVideoCall && <audio ref={remoteAudioRef} autoPlay />}
                 </>
               )}
             </div>
@@ -443,4 +487,4 @@ function VideoCallDialogBox({
   }
 }
 
-export default VideoCallDialogBox;
+export default CallDialogBox;

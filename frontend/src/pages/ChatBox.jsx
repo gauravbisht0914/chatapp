@@ -5,11 +5,7 @@ import { useSelector } from "react-redux";
 import { clearMessages, fetchMessages } from "@/store/messageSlice.js";
 import { useDispatch } from "react-redux";
 import messageHandler from "../utils/sockets/messageHandler.js";
-import {
-  RecentUserRooms,
-  VideoCallDialogBox,
-  Loader,
-} from "@/components/index.js";
+import { RecentUserRooms, CallDialogBox, Loader } from "@/components/index.js";
 
 function ChatBubble({ message, isMe, otherUserImage }) {
   return (
@@ -183,10 +179,12 @@ export default function ChatBox() {
     }
   }, [storeMessages]); // this code will maintain the scroll position when older messages are loaded.
 
-  const [startVideoCall, setStartVideoCall] = useState(false);
-  function startCall() {
-    if (!startVideoCall) {
-      setStartVideoCall(true);
+  const [startCallDialog, setStartCallDialog] = useState(false);
+  const [callType, setCallType] = useState("Audio");
+  function startCall(type) {
+    if (!startCallDialog) {
+      setCallType(type);
+      setStartCallDialog(true);
     }
   }
   console.log(activeUser);
@@ -228,13 +226,13 @@ export default function ChatBox() {
               </div>
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => startCall(false)}
+                  onClick={() => startCall("Audio")}
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   📞 Call
                 </button>
                 <button
-                  onClick={() => startCall(true)}
+                  onClick={() => startCall("Video")}
                   className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
                 >
                   🎥 Video
@@ -300,13 +298,14 @@ export default function ChatBox() {
         </div>
       )}
 
-      {startVideoCall && (
-        <VideoCallDialogBox
+      {startCallDialog && (
+        <CallDialogBox
           incomingCallOffer={null}
           callerData={user}
           calleeData={activeUser}
           roomId={roomId}
-          toggleVideoCallDialogBox={setStartVideoCall}
+          callType={callType}
+          toggleVideoCallDialogBox={setStartCallDialog}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 import "./App.css";
-import { SideBar, VideoCallDialogBox } from "./components/index.js";
+import { SideBar, CallDialogBox } from "./components/index.js";
 import { Outlet } from "react-router";
-import { checkUserAuth } from "./store/userSlice";
+import { checkUserAuth, clearIncomingCall } from "./store/userSlice";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { LoginPage } from "./pages";
@@ -35,12 +35,14 @@ function App() {
   return user ? (
     <>
       {userD.incomingCallData && (
-        <VideoCallDialogBox
+        <CallDialogBox
+          key={userD.incomingCallData.offer?.sdp}
           incomingCallOffer={userD.incomingCallData?.offer}
           callerData={userD.incomingCallData?.callerData}
           calleeData={userD.incomingCallData?.calleeData}
           roomId={userD.incomingCallData?.roomId}
-          // onClose={() => dispatch(toggleCallActive({ callData: null }))}
+          callType={userD.incomingCallData?.callType}
+          onClose={() => dispatch(clearIncomingCall())}
         />
       )}
       <div className="h-screen overflow-hidden bg-[#f5f7fb] text-slate-900">

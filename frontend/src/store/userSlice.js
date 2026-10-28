@@ -68,8 +68,12 @@ export const userSlice = createSlice({
     toggleCallActive: (state, action) => {
       const { callData } = action.payload;
       state.incomingCallData = callData;
-      state.isCallActive = !state.isCallActive;
-    }
+      state.isCallActive = Boolean(callData);
+    },
+    clearIncomingCall: (state) => {
+      state.incomingCallData = null;
+      state.isCallActive = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -91,5 +95,10 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, toggleCallActive } = userSlice.actions;
+export const {
+  setUser,
+  clearUser,
+  toggleCallActive,
+  clearIncomingCall,
+} = userSlice.actions;
 export default userSlice.reducer;

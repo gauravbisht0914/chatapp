@@ -7,6 +7,11 @@ import callRingtone from "@/assets/ringtone.mp3";
 
 export const audio = new Audio(callRingtone);
 
+export function stopRingtone() {
+  audio.pause();
+  audio.currentTime = 0;
+}
+
 export const socket = io(`${import.meta.env.VITE_BACKEND_URL || ""}`, {
   autoConnect: false,
   withCredentials: true,
