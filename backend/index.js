@@ -61,7 +61,7 @@ export const redisClient = createClient({
   password: process.env.REDIS_PASSWORD,
   socket: {
     host: process.env.REDIS_SOCKET_HOST,
-    port: 18689,
+    port: process.env.REDIS_PORT,
   },
 });
 
